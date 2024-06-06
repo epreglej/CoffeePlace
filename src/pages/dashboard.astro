@@ -28,6 +28,13 @@ if (error) {
 }
 
 const email = data.user?.email;
+if (email !== "admin@coffee.place") {
+    return redirect("/");
+}
 ---
 
-<div class="center top-margin">Hi!</div>
+<div class="center top-margin">Hi! {email}</div>
+
+<!-- <script define:vars={{ data }}>
+    console.log(data);
+</script> -->

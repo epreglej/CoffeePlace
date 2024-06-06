@@ -2,15 +2,29 @@
 import Layout from "../layouts/Layout.astro";
 import Card from "../components/Card.astro";
 
-const favCities = [
-    { country: "USA", cities: ["New York", "San Francisco"] },
-    { country: "Spain", cities: ["Madrid", "Barcelona"] },
-    { country: "Japan", cities: ["Tokyo"] },
-    { country: "Germany", cities: ["Berlin"] },
+const locations = [
+    {
+        uuid: "u3z",
+        neighborhood: "Kozari bok",
+        street_address: "Unska 3",
+        city: "Zagreb",
+    },
+    {
+        uuid: "upf42pv",
+        neighborhood: "Pituraša",
+        street_address: "Ulica Par Frulica 42",
+        city: "Prduša Vela",
+    },
+    {
+        uuid: "ugz9g",
+        neighborhood: "Bronx",
+        street_address: "Ulica grada Zagreba 9",
+        city: "Varaždin",
+    },
 ];
 ---
 
-<Layout title="CoffeePlace.">
+<Layout title="CoffeePlace">
     <main>
         <div class="center-align">
             <article
@@ -35,14 +49,18 @@ const favCities = [
             <div class="small-divider"></div>
             <div>
                 {
-                    favCities.map((countryData) => (
-                        <div>
-                            <h6>{countryData.country}</h6>
-                            <ul>
-                                {countryData.cities.map((city) => (
-                                    <li>{city}</li>
-                                ))}
-                            </ul>
+                    locations.map((location) => (
+                        <div class="bottom-margin small-margin">
+                            <a href={"/locations/" + location.uuid}>
+                                <div>
+                                    <h6>{location.neighborhood}</h6>
+                                    <span>
+                                        {location.street_address +
+                                            ", " +
+                                            location.city}
+                                    </span>
+                                </div>
+                            </a>
                         </div>
                     ))
                 }
