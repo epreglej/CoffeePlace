@@ -7,15 +7,15 @@ const accessToken = cookies.get("sb-access-token");
 const refreshToken = cookies.get("sb-refresh-token");
 
 if (accessToken && refreshToken) {
-    return redirect("/");
+    return redirect("/dashboard");
 }
 ---
 
-<Layout title="Sign in">
-    <h1>Sign in</h1>
+<Layout title="Log in">
+    <h1>Log in</h1>
     <p>New here? <a href="/register">Create an account</a></p>
-    <!-- <form action="/api/auth/signin" method="post"> -->
-    <form id="signin-form">
+    <!-- <form action="/api/auth/login" method="post"> -->
+    <form id="login-form">
         <label for="email">Email</label>
         <input type="email" name="email" id="email" />
         <label for="password">Password</label>
@@ -26,7 +26,7 @@ if (accessToken && refreshToken) {
 
 <script>
     document
-        .getElementById("signin-form")
+        .getElementById("login-form")
         .addEventListener("submit", async (event) => {
             event.preventDefault(); // Prevent the default form submission
 
@@ -35,7 +35,7 @@ if (accessToken && refreshToken) {
             const password = formData.get("password");
 
             try {
-                const response = await fetch("/api/auth/signin", {
+                const response = await fetch("/api/auth/login", {
                     method: "POST",
                     body: formData,
                 });
@@ -45,7 +45,7 @@ if (accessToken && refreshToken) {
                     alert(errorMessage); // Display the error message in an alert
                 } else if (response.redirected) {
                     if (response.url) {
-                        window.location.href = response.url; // Handle successful sign-in here, e.g., redirecting the user
+                        window.location.href = response.url; // Handle successful log-in here, e.g., redirecting the user
                     }
                 }
             } catch (error) {
