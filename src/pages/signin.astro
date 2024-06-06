@@ -1,0 +1,56 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const { cookies, redirect } = Astro;
+
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+
+if (accessToken && refreshToken) {
+    return redirect("/");
+}
+---
+
+<Layout title="Sign in">
+    <h1>Sign in</h1>
+    <p>New here? <a href="/register">Create an account</a></p>
+    <!-- <form action="/api/auth/signin" method="post"> -->
+    <form id="signin-form">
+        <label for="email">Email</label>
+        <input type="email" name="email" id="email" />
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" />
+        <button type="submit">Login</button>
+    </form>
+</Layout>
+
+<script>
+    document
+        .getElementById("signin-form")
+        .addEventListener("submit", async (event) => {
+            event.preventDefault(); // Prevent the default form submission
+
+            const formData = new FormData(event.target);
+            const email = formData.get("email");
+            const password = formData.get("password");
+
+            try {
+                const response = await fetch("/api/auth/signin", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const errorMessage = await response.text(); // Assuming the server sends plain text for errors
+                    alert(errorMessage); // Display the error message in an alert
+                } else if (response.redirected) {
+                    if (response.url) {
+                        window.location.href = response.url; // Handle successful sign-in here, e.g., redirecting the user
+                    }
+                }
+            } catch (error) {
+                console.error("Error signing in:", error);
+                alert("An unexpected error occurred. Please try again later."); // Generic error message
+            }
+        });
+</script>
