@@ -8,6 +8,9 @@ const accessToken = cookies.get("sb-access-token");
 const refreshToken = cookies.get("sb-refresh-token");
 
 if (!accessToken || !refreshToken) {
+    cookies.set("referrer-url", Astro.url.pathname, {
+        path: "/",
+    });
     return redirect("/login");
 }
 
