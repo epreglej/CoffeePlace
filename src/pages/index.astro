@@ -26,53 +26,57 @@ const locations = [
 
 <Layout title="CoffeePlace">
     <main>
-        <div class="center-align">
+        <div class="main responsive right page active top-margin">
+            <div class="center-align">
+                <article
+                    class="top-margin medium-elevate medium-width center center-align middle-align surface"
+                >
+                    <h2 class="freeman-regular">CoffeePlace ☕️</h2>
+                </article>
+            </div>
+
             <article
-                class="top-margin medium-elevate medium-width center center-align middle-align surface"
+                class="top-margin medium-elevate medium-width center surface"
             >
-                <h2 class="freeman-regular">CoffeePlace ☕️</h2>
+                <div
+                    class="field large prefix round fill small-elevate bottom-margin medium-margin"
+                >
+                    <i class="front">search</i>
+                    <input
+                        v-model="searchQuery"
+                        class="primary-hover"
+                        type="text"
+                        placeholder="Pretražite lokacije..."
+                    />
+                </div>
+                <div class="small-divider"></div>
+                <div>
+                    {
+                        locations.map((location) => (
+                            <div class="bottom-margin small-margin">
+                                <a href={"/locations/" + location.uuid}>
+                                    <div>
+                                        <h6>{location.neighborhood}</h6>
+                                        <span>
+                                            {location.street_address +
+                                                ", " +
+                                                location.city}
+                                        </span>
+                                    </div>
+                                </a>
+                            </div>
+                        ))
+                    }
+                </div>
             </article>
-        </div>
 
-        <article class="top-margin medium-elevate medium-width center surface">
-            <div
-                class="field large prefix round fill small-elevate bottom-margin medium-margin"
-            >
-                <i class="front">search</i>
-                <input
-                    v-model="searchQuery"
-                    class="primary-hover"
-                    type="text"
-                    placeholder="Pretražite lokacije..."
-                />
+            <div class="center top-margin">
+                <a
+                    href="/dashboard"
+                    class="small-text primary-text primary-hover center"
+                    >Administrator log-in</a
+                >
             </div>
-            <div class="small-divider"></div>
-            <div>
-                {
-                    locations.map((location) => (
-                        <div class="bottom-margin small-margin">
-                            <a href={"/locations/" + location.uuid}>
-                                <div>
-                                    <h6>{location.neighborhood}</h6>
-                                    <span>
-                                        {location.street_address +
-                                            ", " +
-                                            location.city}
-                                    </span>
-                                </div>
-                            </a>
-                        </div>
-                    ))
-                }
-            </div>
-        </article>
-
-        <div class="center top-margin">
-            <a
-                href="/dashboard"
-                class="small-text primary-text primary-hover center"
-                >Administrator log-in</a
-            >
         </div>
     </main>
 </Layout>

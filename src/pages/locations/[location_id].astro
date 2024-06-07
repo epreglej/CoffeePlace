@@ -2,7 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import { supabase } from "../../db/supabase";
 
-const { uuid } = Astro.params;
+const { location_id } = Astro.params;
 const { cookies, redirect } = Astro;
 
 const accessToken = cookies.get("sb-access-token");
@@ -31,9 +31,11 @@ if (error) {
     return redirect("/login");
 }
 
+const email = data.user?.email;
+
 // iz baze povuci detalje o specifičnom kafiću na temelju UUID iz linka
 const location = {
-    uuid: "u3z",
+    id: "u3z",
     neighborhood: "Kozari bok",
     street_address: "Unska 3",
     city: "Zagreb",
@@ -48,7 +50,7 @@ const tables = [
 ---
 
 <Layout title="CoffeePlace">
-    <div><span>UUID: {uuid}</span></div>
+    <div><span>Location ID: {location_id}</span></div>
     <div class="seating-chart medium-width center-align center">
         {
             tables.map((table) => (
@@ -84,7 +86,7 @@ const tables = [
     </dialog>
 </Layout>
 
-<script>
+<script define:vars={{ email, location_id }}>
     let selected_table_id = null;
 
     let handleClick = (id) => {
@@ -104,26 +106,24 @@ const tables = [
         .addEventListener("submit", async (event) => {
             event.preventDefault(); // Prevent the default form submission
 
-            await authenticate();
-
-            const formData = new FormData(event.target);
-            const email = formData.get("email");
-            const password = formData.get("password");
+            const formData = new FormData();
+            formData.append("email", email);
+            formData.append("location-id", location_id);
+            formData.append("table-id", selected_table_id);
 
             try {
-                const response = await fetch("/api/auth/login", {
+                const response = await fetch("/api/auth/reservation", {
                     method: "POST",
                     body: formData,
                 });
 
-                if (!response.ok) {
-                    const errorMessage = await response.text(); // Assuming the server sends plain text for errors
-                    alert(errorMessage); // Display the error message in an alert
-                } else if (response.redirected) {
-                    if (response.url) {
-                        window.location.href = response.url; // Handle successful log-in here, e.g., redirecting the user
-                    }
+                if (response.status === 303) {
+                    window.location.reload();
                 }
+
+                // handle error ako ne uspije
+                //
+                //
             } catch (error) {
                 console.error("Error signing in:", error);
                 alert("An unexpected error occurred. Please try again later."); // Generic error message
