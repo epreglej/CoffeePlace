@@ -1,7 +1,35 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import { supabase } from "../../db/supabase";
 
 const { uuid } = Astro.params;
+const { cookies, redirect } = Astro;
+
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+
+if (!accessToken || !refreshToken) {
+    cookies.set("referrer-url", Astro.url.pathname, {
+        path: "/",
+    });
+    return redirect("/login");
+}
+
+const { data, error } = await supabase.auth.setSession({
+    refresh_token: refreshToken.value,
+    access_token: accessToken.value,
+});
+
+if (error) {
+    cookies.delete("sb-access-token", {
+        path: "/",
+    });
+    cookies.delete("sb-refresh-token", {
+        path: "/",
+    });
+
+    return redirect("/login");
+}
 
 // iz baze povuci detalje o specifičnom kafiću na temelju UUID iz linka
 const location = {
@@ -24,27 +52,84 @@ const tables = [
     <div class="seating-chart medium-width center-align center">
         {
             tables.map((table) => (
-                <button
+                <div
                     class="table"
                     data-ui="#dialog"
                     data-id={table.id}
                     style={`grid-column: ${table.coordinates.col + 1}; grid-row: ${table.coordinates.row + 1};`}
                 >
                     {table.id}
-                </button>
+                </div>
             ))
         }
     </div>
 
     <div class="overlay blur"></div>
-    <dialog id="dialog">
-        <h5>Custom overlay</h5>
-        <div id="form-table-id">You pressed table with id:</div>
-        <nav class="right-align no-space">
-            <button class="transparent link" data-ui="#dialog">Confirm</button>
-        </nav>
+    <dialog id="dialog" class="center small-width">
+        <form id="reservation-form">
+            <h5 class="center-align bottom-margin">Reservation</h5>
+            <p class="center-align">
+                <span>Are you sure that you want to reserve</span>
+                <span id="form-table-id" class="bold"></span>
+                <span>for next 15 minutes?</span>
+            </p>
+
+            <nav class="center-align">
+                <button type="submit" data-ui="#dialog">Confirm</button>
+                <button type="button" class="transparent" data-ui="#dialog">
+                    Cancel
+                </button>
+            </nav>
+        </form>
     </dialog>
 </Layout>
+
+<script>
+    let selected_table_id = null;
+
+    let handleClick = (id) => {
+        selected_table_id = id;
+        console.log("Table clicked with ID:", id);
+        document.getElementById("form-table-id").innerHTML =
+            `Table ${selected_table_id}`;
+    };
+
+    const tableButtons = document.querySelectorAll(".table");
+    tableButtons.forEach((button) =>
+        button.addEventListener("click", () => handleClick(button.dataset.id)),
+    );
+
+    document
+        .getElementById("reservation-form")
+        .addEventListener("submit", async (event) => {
+            event.preventDefault(); // Prevent the default form submission
+
+            await authenticate();
+
+            const formData = new FormData(event.target);
+            const email = formData.get("email");
+            const password = formData.get("password");
+
+            try {
+                const response = await fetch("/api/auth/login", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const errorMessage = await response.text(); // Assuming the server sends plain text for errors
+                    alert(errorMessage); // Display the error message in an alert
+                } else if (response.redirected) {
+                    if (response.url) {
+                        window.location.href = response.url; // Handle successful log-in here, e.g., redirecting the user
+                    }
+                }
+            } catch (error) {
+                console.error("Error signing in:", error);
+                alert("An unexpected error occurred. Please try again later."); // Generic error message
+            }
+        });
+</script>
 
 <style>
     .seating-chart {
@@ -67,20 +152,10 @@ const tables = [
         align-items: center;
         font-size: 20px; /* Adjust font size as needed */
     }
+
+    .table:hover {
+        outline: 2px solid;
+        outline-color: #ff0000;
+        cursor: pointer;
+    }
 </style>
-
-<script>
-    let selected_table_id = null;
-
-    let handleClick = (id) => {
-        selected_table_id = id;
-        console.log("Table clicked with ID:", id);
-        document.getElementById("form-table-id").innerHTML =
-            `You pressed table with id: ${selected_table_id}`;
-    };
-
-    const tableButtons = document.querySelectorAll(".table");
-    tableButtons.forEach((button) =>
-        button.addEventListener("click", () => handleClick(button.dataset.id)),
-    );
-</script>

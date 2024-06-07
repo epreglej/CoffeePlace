@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import LoginForm from "../components/LoginForm.astro";
 
 const { cookies, redirect } = Astro;
 
@@ -15,42 +16,5 @@ if (accessToken && refreshToken) {
     <h1>Log in</h1>
     <p>New here? <a href="/register">Create an account</a></p>
     <!-- <form action="/api/auth/login" method="post"> -->
-    <form id="login-form">
-        <label for="email">Email</label>
-        <input type="email" name="email" id="email" />
-        <label for="password">Password</label>
-        <input type="password" name="password" id="password" />
-        <button type="submit">Login</button>
-    </form>
+    <LoginForm />
 </Layout>
-
-<script>
-    document
-        .getElementById("login-form")
-        .addEventListener("submit", async (event) => {
-            event.preventDefault(); // Prevent the default form submission
-
-            const formData = new FormData(event.target);
-            const email = formData.get("email");
-            const password = formData.get("password");
-
-            try {
-                const response = await fetch("/api/auth/login", {
-                    method: "POST",
-                    body: formData,
-                });
-
-                if (!response.ok) {
-                    const errorMessage = await response.text(); // Assuming the server sends plain text for errors
-                    alert(errorMessage); // Display the error message in an alert
-                } else if (response.redirected) {
-                    if (response.url) {
-                        window.location.href = response.url; // Handle successful log-in here, e.g., redirecting the user
-                    }
-                }
-            } catch (error) {
-                console.error("Error signing in:", error);
-                alert("An unexpected error occurred. Please try again later."); // Generic error message
-            }
-        });
-</script>

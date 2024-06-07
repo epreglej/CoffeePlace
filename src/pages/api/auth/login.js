@@ -26,5 +26,5 @@ export const POST = async ({ request, cookies, redirect }) => {
     path: "/",
   });
 
-  return redirect("/");
+  return redirect(cookies.get("referrer-url").value);
 };
