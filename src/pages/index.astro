@@ -26,57 +26,69 @@ const locations = [
 
 <Layout title="CoffeePlace">
     <main>
-        <div class="main responsive right page active top-margin">
-            <div class="center-align">
-                <article
-                    class="top-margin medium-elevate medium-width center center-align middle-align surface"
-                >
-                    <h2 class="freeman-regular">CoffeePlace ☕️</h2>
-                </article>
-            </div>
-
+        <div class="center-align top-margin large-margin">
             <article
-                class="top-margin medium-elevate medium-width center surface"
+                class="top-margin medium-elevate medium-width center center-align middle-align surface"
             >
-                <div
-                    class="field large prefix round fill small-elevate bottom-margin medium-margin"
-                >
-                    <i class="front">search</i>
-                    <input
-                        v-model="searchQuery"
-                        class="primary-hover"
-                        type="text"
-                        placeholder="Pretražite lokacije..."
-                    />
-                </div>
-                <div class="small-divider"></div>
-                <div>
-                    {
-                        locations.map((location) => (
-                            <div class="bottom-margin small-margin">
-                                <a href={"/locations/" + location.uuid}>
-                                    <div>
-                                        <h6>{location.neighborhood}</h6>
-                                        <span>
-                                            {location.street_address +
-                                                ", " +
-                                                location.city}
-                                        </span>
-                                    </div>
-                                </a>
-                            </div>
-                        ))
-                    }
-                </div>
+                <h2 class="freeman-regular">CoffeePlace ☕️</h2>
             </article>
+        </div>
 
-            <div class="center top-margin">
-                <a
-                    href="/dashboard"
-                    class="small-text primary-text primary-hover center"
-                    >Administrator log-in</a
-                >
-            </div>
+        <div
+            class="field vertical-margin large center medium-width prefix small-elevate round fill"
+        >
+            <i class="front">search</i>
+            <input
+                id="search"
+                class="primary-hover surface"
+                type="text"
+                placeholder="Pretražite lokacije..."
+            />
+        </div>
+
+        <div
+            id="locations-container"
+            class="medium-width center surface round small-padding shadow"
+        >
+        </div>
+
+        <div class="center top-margin">
+            <a href="/dashboard" class="small-text bold primary-hover center"
+                >Administrator log-in</a
+            >
         </div>
     </main>
 </Layout>
+
+<script type="module" define:vars={{ locations }}>
+    const locationsContainer = document.getElementById("locations-container");
+
+    function renderLocations(locations) {
+        locationsContainer.innerHTML = locations
+            .map(
+                (location) => `
+            <div class="margin small-margin">
+                <a href="/locations/${location.uuid}">
+                    <div>
+                        <h6>${location.neighborhood}</h6>
+                        <span>
+                            ${location.street_address}, ${location.city}
+                        </span>
+                    </div>
+                </a>
+            </div>`,
+            )
+            .join("");
+    }
+
+    document.getElementById("search").addEventListener("keyup", (event) => {
+        const filterValue = event.target.value.toLowerCase();
+        const filteredLocations = locations.filter((location) =>
+            location.neighborhood.toLowerCase().includes(filterValue),
+        );
+
+        renderLocations(filteredLocations);
+    });
+
+    renderLocations(locations);
+</script>
