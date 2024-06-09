@@ -42,48 +42,91 @@ const location = {
 };
 
 const tables = [
-    { id: 1, available_seats: 2, coordinates: { row: 1, col: 0 } },
-    { id: 2, available_seats: 2, coordinates: { row: 0, col: 1 } },
-    { id: 3, available_seats: 5, coordinates: { row: 4, col: 1 } },
-    { id: 4, available_seats: 5, coordinates: { row: 3, col: 5 } },
+    {
+        id: 1,
+        location_uuid: "u3z",
+        taken_seats: 2,
+        total_seats: 4,
+        reserved: false,
+        coordinates: { row: 200, col: 50 },
+    },
+    {
+        id: 2,
+        taken_seats: 0,
+        total_seats: 4,
+        reserved: false,
+        coordinates: { row: 0, col: 200 },
+    },
+    {
+        id: 3,
+        taken_seats: 5,
+        total_seats: 6,
+        reserved: false,
+        coordinates: { row: 300, col: 1 },
+    },
+    {
+        id: 4,
+        taken_seats: 0,
+        total_seats: 6,
+        reserved: true,
+        coordinates: { row: 3, col: 5 },
+    },
 ];
 ---
 
 <Layout title="CoffeePlace">
-    <div><span>Location ID: {location_id}</span></div>
-    <div class="seating-chart medium-width center-align center">
-        {
-            tables.map((table) => (
-                <div
-                    class="table"
-                    data-ui="#dialog"
-                    data-id={table.id}
-                    style={`grid-column: ${table.coordinates.col + 1}; grid-row: ${table.coordinates.row + 1};`}
-                >
-                    {table.id}
-                </div>
-            ))
-        }
-    </div>
+    <main>
+        <div class="center-align top-margin large-margin">
+            <article
+                class="top-margin medium-elevate medium-width center center-align middle-align surface"
+            >
+                <h4 class="freeman-regular">Edit location</h4>
+            </article>
+        </div>
 
-    <div class="overlay blur"></div>
-    <dialog id="dialog" class="center small-width">
-        <form id="reservation-form">
-            <h5 class="center-align bottom-margin">Reservation</h5>
-            <p class="center-align">
-                <span>Are you sure that you want to reserve</span>
-                <span id="form-table-id" class="bold"></span>
-                <span>for next 15 minutes?</span>
-            </p>
+        <div><span>Location ID: {location_id}</span></div>
+        <!-- <div class="seating-chart medium-width center-align center"> -->
+        <article
+            class="vertical-margin medium-elevate medium-width center surface"
+        >
+            <div id="grid" class="medium-width border" style="height: 300px;">
+                {
+                    tables.map((table) => (
+                        <div
+                            class="table"
+                            data-ui="#dialog"
+                            data-id={table.id}
+                            style={`transform:translate(${table.coordinates.row}px, ${table.coordinates.col}px);`}
+                        >
+                            <span class="center-align">
+                                {table.taken_seats}/{table.total_seats}
+                                <i>airline_seat_recline_normal</i>
+                            </span>
+                        </div>
+                    ))
+                }
+            </div>
+        </article>
 
-            <nav class="center-align">
-                <button type="submit" data-ui="#dialog">Confirm</button>
-                <button type="button" class="transparent" data-ui="#dialog">
-                    Cancel
-                </button>
-            </nav>
-        </form>
-    </dialog>
+        <div class="overlay blur"></div>
+        <dialog id="dialog" class="center small-width">
+            <form id="reservation-form">
+                <h5 class="center-align bottom-margin">Reservation</h5>
+                <p class="center-align">
+                    <span>Are you sure that you want to reserve</span>
+                    <span id="form-table-id" class="bold"></span>
+                    <span>for next 15 minutes?</span>
+                </p>
+
+                <nav class="center-align">
+                    <button type="submit" data-ui="#dialog">Confirm</button>
+                    <button type="button" class="transparent" data-ui="#dialog">
+                        Cancel
+                    </button>
+                </nav>
+            </form>
+        </dialog>
+    </main>
 </Layout>
 
 <script define:vars={{ email, location_id }}>
@@ -97,9 +140,10 @@ const tables = [
     };
 
     const tableButtons = document.querySelectorAll(".table");
-    tableButtons.forEach((button) =>
-        button.addEventListener("click", () => handleClick(button.dataset.id)),
-    );
+    tableButtons.forEach((button) => {
+        button.addEventListener("click", () => handleClick(button.dataset.id));
+        button.style.backgroundColor = "yellow";
+    });
 
     document
         .getElementById("reservation-form")
@@ -132,25 +176,16 @@ const tables = [
 </script>
 
 <style>
-    .seating-chart {
-        display: grid;
-        grid-template-columns: repeat(
-            5,
-            1fr
-        ); /* Creates 5 columns of equal width */
-        grid-template-rows: repeat(5, 1fr); /* Creates 5 rows of equal height */
-        gap: 10px; /* Space between grid cells */
-    }
-
     .table {
-        width: 75px; /* Adjust size as needed */
-        height: 75px;
-        background-color: #ffd700; /* Example color */
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        padding: 1px;
+        background-clip: content-box;
+        background-color: yellow;
         border-radius: 50%;
         display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 20px; /* Adjust font size as needed */
+        font-size: 20px;
     }
 
     .table:hover {

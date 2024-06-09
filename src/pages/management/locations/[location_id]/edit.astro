@@ -45,9 +45,11 @@ const location = {
 
 const tables = [
     {
+        id: 1,
         location_uuid: "u3z",
-        x: 1,
-        y: 2,
+        available_seats: 2,
+        total_seats: 4,
+        coordinates: { row: 1, col: 0 },
     },
 ];
 
@@ -101,36 +103,120 @@ const location_placeholders = structuredClone(location);
                     />
                     <label for="city" class="active">City</label>
                 </div>
+
+                <div><span>Location ID: {location_id}</span></div>
+                <div
+                    id="seating-chart"
+                    class="seating-chart medium-width center-align center"
+                >
+                    {
+                        tables.map((table) => (
+                            <div
+                                class="table"
+                                data-id={table.id}
+                                draggable="true"
+                                data-x="2"
+                                data-y="1"
+                            >
+                                {table.id}
+                            </div>
+                        ))
+                    }
+                </div>
                 <button class="center" type="submit">Update</button>
             </form>
         </article>
     </main>
-
-    <script define:vars={{ location, tables }}>
-        document
-            .getElementById("edit-location-form")
-            .addEventListener("submit", async (event) => {
-                event.preventDefault();
-
-                const formData = new FormData(event.target);
-                const street_address = formData.get("street_address");
-                const neighborhood = formData.get("neighborhood");
-                const city = formData.get("city");
-
-                if (!street_address || !neighborhood || !city) {
-                    return alert("All fields are required");
-                }
-
-                if (
-                    street_address === location.street_address &&
-                    neighborhood === location.neighborhood &&
-                    city === location.city
-                ) {
-                    return alert("No changes detected");
-                }
-
-                console.log({ street_address, neighborhood, city });
-                console.log(tables);
-            });
-    </script>
 </Layout>
+
+<script define:vars={{ location, tables }}>
+    document
+        .getElementById("edit-location-form")
+        .addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+            const street_address = formData.get("street_address");
+            const neighborhood = formData.get("neighborhood");
+            const city = formData.get("city");
+
+            if (!street_address || !neighborhood || !city) {
+                return alert("All fields are required");
+            }
+
+            if (
+                street_address === location.street_address &&
+                neighborhood === location.neighborhood &&
+                city === location.city
+            ) {
+                return alert("No changes detected");
+            }
+
+            console.log({ street_address, neighborhood, city });
+            console.log(tables);
+        });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const gridContainer = document.getElementById("seating-chart");
+        const yellowCells = document.querySelectorAll(".table");
+
+        // Define the grid size
+        const gridSize = 5; // Adjust based on your grid cell size
+
+        // Optional: Define an offset if needed
+        const gridOffset = { x: 0, y: 0 };
+
+        // Initialize the grid snapper
+        const gridSnapper = interact.snappers.grid({
+            x: gridSize,
+            y: gridSize,
+            offset: gridOffset,
+            limits: {
+                top: 0,
+                left: 0,
+                bottom: gridContainer.offsetHeight,
+                right: gridContainer.offsetWidth,
+            },
+        });
+
+        // Apply draggable behavior with snapping to the grid
+        yellowCells.forEach((cell) => {
+            interact(cell).draggable({
+                modifiers: [
+                    interact.modifiers.snap({ targets: [gridSnapper] }),
+                    interact.modifiers.restrictRect({ restriction: "parent" }), // Optionally restrict movement to the grid container
+                ],
+                autoScroll: true, // Enable automatic scrolling
+            });
+        });
+    });
+</script>
+
+<style>
+    .seating-chart {
+        display: grid;
+        grid-template-columns: repeat(
+            5,
+            1fr
+        ); /* Creates 5 columns of equal width */
+        grid-template-rows: repeat(5, 1fr); /* Creates 5 rows of equal height */
+        gap: 10px; /* Space between grid cells */
+    }
+
+    .table {
+        width: 75px; /* Adjust size as needed */
+        height: 75px;
+        background-color: #ffd700; /* Example color */
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 20px; /* Adjust font size as needed */
+    }
+
+    .table:hover {
+        outline: 2px solid;
+        outline-color: #ff0000;
+        cursor: pointer;
+    }
+</style>
