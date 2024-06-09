@@ -93,104 +93,147 @@ const tables = [
                 {
                     tables.map((table) => (
                         <div
-                            class="table"
+                            class={`table ${
+                                table.reserved
+                                    ? "red6"
+                                    : table.taken_seats === 0
+                                      ? "green5"
+                                      : "orange4"
+                            }`}
                             data-ui="#dialog"
                             data-id={table.id}
                             style={`transform:translate(${table.coordinates.row}px, ${table.coordinates.col}px);`}
                         >
-                            <span class="center-align">
+                            <span class="center-align small-padding">
                                 {table.taken_seats}/{table.total_seats}
-                                <i>airline_seat_recline_normal</i>
+                                <i class="small" style="margin-top:-15px;">
+                                    airline_seat_recline_normal
+                                </i>
                             </span>
                         </div>
                     ))
                 }
+                <div
+                    id="entrance"
+                    class="black"
+                    style="transform:translate(138px, 0px);  width:75px; height:5px;"
+                >
+                </div>
+
+                <div
+                    class="border"
+                    style="transform:translate(284px, 195px);  width:50px; height:90px;"
+                >
+                    bar
+                </div>
             </div>
+
+            <div class="overlay blur"></div>
+            <dialog id="dialog" class="center small-width">
+                <form id="reservation-form">
+                    <h5 class="center-align bottom-margin">Reservation</h5>
+                    <p class="center-align">
+                        <span>Are you sure that you want to reserve</span>
+                        <span id="form-table-id" class="bold"></span>
+                        <span>for next 15 minutes?</span>
+                    </p>
+
+                    <nav class="center-align">
+                        <button type="submit" data-ui="#dialog">Confirm</button>
+                        <button
+                            type="button"
+                            class="transparent"
+                            data-ui="#dialog"
+                        >
+                            Cancel
+                        </button>
+                    </nav>
+                </form>
+            </dialog>
         </article>
-
-        <div class="overlay blur"></div>
-        <dialog id="dialog" class="center small-width">
-            <form id="reservation-form">
-                <h5 class="center-align bottom-margin">Reservation</h5>
-                <p class="center-align">
-                    <span>Are you sure that you want to reserve</span>
-                    <span id="form-table-id" class="bold"></span>
-                    <span>for next 15 minutes?</span>
-                </p>
-
-                <nav class="center-align">
-                    <button type="submit" data-ui="#dialog">Confirm</button>
-                    <button type="button" class="transparent" data-ui="#dialog">
-                        Cancel
-                    </button>
-                </nav>
-            </form>
-        </dialog>
     </main>
-</Layout>
 
-<script define:vars={{ email, location_id }}>
-    let selected_table_id = null;
-
-    let handleClick = (id) => {
-        selected_table_id = id;
-        console.log("Table clicked with ID:", id);
-        document.getElementById("form-table-id").innerHTML =
-            `Table ${selected_table_id}`;
-    };
-
-    const tableButtons = document.querySelectorAll(".table");
-    tableButtons.forEach((button) => {
-        button.addEventListener("click", () => handleClick(button.dataset.id));
-        button.style.backgroundColor = "yellow";
-    });
-
-    document
-        .getElementById("reservation-form")
-        .addEventListener("submit", async (event) => {
-            event.preventDefault(); // Prevent the default form submission
-
-            const formData = new FormData();
-            formData.append("email", email);
-            formData.append("location-id", location_id);
-            formData.append("table-id", selected_table_id);
-
-            try {
-                const response = await fetch("/api/reservation", {
-                    method: "POST",
-                    body: formData,
+    <script define:vars={{ email, location_id, tables }}>
+        document.addEventListener("DOMContentLoaded", function () {
+            const tables = document.querySelectorAll(".table");
+            tables.forEach((table) => {
+                const originalContent = table.innerHTML;
+                table.addEventListener("mouseenter", function (event) {
+                    table.innerHTML =
+                        "<span class='center middle-align'>" +
+                        event.currentTarget.getAttribute("data-id") +
+                        "</span>";
                 });
-
-                if (response.status === 303) {
-                    window.location.reload();
-                }
-
-                // handle error ako ne uspije
-                //
-                //
-            } catch (error) {
-                console.error("Error signing in:", error);
-                alert("An unexpected error occurred. Please try again later."); // Generic error message
-            }
+                table.addEventListener("mouseleave", function (event) {
+                    table.innerHTML = originalContent;
+                });
+            });
         });
-</script>
 
-<style>
-    .table {
-        position: absolute;
-        width: 50px;
-        height: 50px;
-        padding: 1px;
-        background-clip: content-box;
-        background-color: yellow;
-        border-radius: 50%;
-        display: flex;
-        font-size: 20px;
-    }
+        let selected_table_id = null;
 
-    .table:hover {
-        outline: 2px solid;
-        outline-color: #ff0000;
-        cursor: pointer;
-    }
-</style>
+        let handleClick = (id) => {
+            selected_table_id = id;
+            console.log("Table clicked with ID:", id);
+            document.getElementById("form-table-id").innerHTML =
+                `Table ${selected_table_id}`;
+        };
+
+        const tableButtons = document.querySelectorAll(".table");
+        tableButtons.forEach((button) => {
+            button.addEventListener("click", () =>
+                handleClick(button.dataset.id),
+            );
+        });
+
+        document
+            .getElementById("reservation-form")
+            .addEventListener("submit", async (event) => {
+                event.preventDefault(); // Prevent the default form submission
+
+                const formData = new FormData();
+                formData.append("email", email);
+                formData.append("location-id", location_id);
+                formData.append("table-id", selected_table_id);
+
+                try {
+                    const response = await fetch("/api/reservation", {
+                        method: "POST",
+                        body: formData,
+                    });
+
+                    if (response.status === 303) {
+                        window.location.reload();
+                    }
+
+                    // handle error ako ne uspije
+                    //
+                    //
+                } catch (error) {
+                    console.error("Error signing in:", error);
+                    alert(
+                        "An unexpected error occurred. Please try again later.",
+                    ); // Generic error message
+                }
+            });
+    </script>
+
+    <style>
+        .table {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            padding: 1px;
+            background-clip: content-box;
+            border-radius: 50%;
+            display: flex;
+            font-size: 20px;
+        }
+
+        .table:hover {
+            outline: 2px solid;
+            outline-color: #ff0000;
+            cursor: pointer;
+        }
+    </style>
+</Layout>
