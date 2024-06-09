@@ -1,0 +1,136 @@
+---
+import Layout from "@layouts/Layout.astro";
+import { supabase } from "@databases/supabase.js";
+
+const { location_id } = Astro.params;
+const { cookies, redirect } = Astro;
+
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+
+if (!accessToken || !refreshToken) {
+    cookies.set("referrer-url", Astro.url.pathname, {
+        path: "/",
+    });
+    return redirect("/login");
+}
+
+const { data, error } = await supabase.auth.setSession({
+    refresh_token: refreshToken.value,
+    access_token: accessToken.value,
+});
+
+if (error) {
+    cookies.delete("sb-access-token", {
+        path: "/",
+    });
+    cookies.delete("sb-refresh-token", {
+        path: "/",
+    });
+
+    return redirect("/login");
+}
+
+const email = data.user?.email;
+if (email !== "admin@coffee.place") {
+    return redirect("/");
+}
+
+const location = {
+    uuid: "u3z",
+    neighborhood: "Kozari bok",
+    street_address: "Unska 3",
+    city: "Zagreb",
+};
+
+const tables = [
+    {
+        location_uuid: "u3z",
+        x: 1,
+        y: 2,
+    },
+];
+
+const location_placeholders = structuredClone(location);
+---
+
+<Layout>
+    <main>
+        <div class="center-align top-margin large-margin">
+            <article
+                class="top-margin medium-elevate medium-width center center-align middle-align surface"
+            >
+                <h4 class="freeman-regular">Edit location</h4>
+            </article>
+        </div>
+
+        <article
+            class="vertical-margin medium-elevate medium-width center surface"
+        >
+            <form id="edit-location-form">
+                <div class="field label border bottom-margin large-margin">
+                    <input
+                        id="street_address"
+                        class="active"
+                        name="street_address"
+                        type="text"
+                        value={location.street_address}
+                    />
+                    <label for="street_address" class="active"
+                        >Street address</label
+                    >
+                </div>
+                <div class="field label border vertical-margin large-margin">
+                    <input
+                        id="neighborhood"
+                        class="active"
+                        name="neighborhood"
+                        type="text"
+                        value={location.neighborhood}
+                    />
+                    <label for="neighborhood" class="active">Neighborhood</label
+                    >
+                </div>
+                <div class="field label border vertical-margin large-margin">
+                    <input
+                        id="city"
+                        class="active"
+                        name="city"
+                        type="text"
+                        value={location.city}
+                    />
+                    <label for="city" class="active">City</label>
+                </div>
+                <button class="center" type="submit">Update</button>
+            </form>
+        </article>
+    </main>
+
+    <script define:vars={{ location, tables }}>
+        document
+            .getElementById("edit-location-form")
+            .addEventListener("submit", async (event) => {
+                event.preventDefault();
+
+                const formData = new FormData(event.target);
+                const street_address = formData.get("street_address");
+                const neighborhood = formData.get("neighborhood");
+                const city = formData.get("city");
+
+                if (!street_address || !neighborhood || !city) {
+                    return alert("All fields are required");
+                }
+
+                if (
+                    street_address === location.street_address &&
+                    neighborhood === location.neighborhood &&
+                    city === location.city
+                ) {
+                    return alert("No changes detected");
+                }
+
+                console.log({ street_address, neighborhood, city });
+                console.log(tables);
+            });
+    </script>
+</Layout>

@@ -112,7 +112,7 @@ const tables = [
             formData.append("table-id", selected_table_id);
 
             try {
-                const response = await fetch("/api/auth/reservation", {
+                const response = await fetch("/api/reservation", {
                     method: "POST",
                     body: formData,
                 });

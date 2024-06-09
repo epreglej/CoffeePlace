@@ -1,6 +1,5 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import Card from "../components/Card.astro";
+import Layout from "@layouts/Layout.astro";
 
 const locations = [
     {
@@ -60,7 +59,8 @@ const locations = [
     </main>
 </Layout>
 
-<script type="module" define:vars={{ locations }}>
+<!-- <script type="module" define:vars={{ locations }}> -->
+<script define:vars={{ locations }}>
     const locationsContainer = document.getElementById("locations-container");
 
     function renderLocations(locations) {
