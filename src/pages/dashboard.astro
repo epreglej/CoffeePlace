@@ -37,33 +37,32 @@ if (email !== "admin@coffee.place") {
 ---
 
 <Layout>
-    <div class="center top-margin">Hi! {email}</div>
-    <article class="vertical-margin medium-elevate medium-width center surface">
-        <div class="grid horizontal-margin">
-            <div class="s12">
-                <a href="/" class="wave round wrap">
-                    <h6>Overview</h6>
-                    <p>
-                        Jump back to the default page to explore all the
-                        applications in the system.
-                    </p>
-                </a>
-            </div>
-            <div class="s12">
-                <a class="wave round wrap" href="/management/locations">
+    <main>
+        <div class="center-align top-margin large-margin">
+            <article
+                class="top-margin medium-elevate medium-width center center-align middle-align surface"
+            >
+                <h2 class="freeman-regular">Dashboard ⚙️</h2>
+            </article>
+        </div>
+        <article
+            class="vertical-margin medium-elevate medium-width center surface"
+        >
+            <div class="">
+                <a class="wave wrap" href="/management/locations">
                     <h6>Location management</h6>
                     <p>
-                        Add new locations to the database or modify the
-                        existing.
+                        Add new locations to the database or modify the existing
+                        ones.
                     </p>
                 </a>
             </div>
-            <div class="s12">
-                <a class="wave round wrap" href="/management/users">
-                    <h6>User management</h6>
-                    <p>Create new admin accounts.</p>
+            <div class="vertical-margin">
+                <a class="wave wrap" href="/management/reservations">
+                    <h6>Reservation management</h6>
+                    <p>Review and cancel reservations.</p>
                 </a>
             </div>
-        </div>
-    </article>
+        </article>
+    </main>
 </Layout>
