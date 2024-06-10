@@ -50,28 +50,32 @@ const tables = [
         taken_seats: 2,
         total_seats: 4,
         reserved: false,
-        coordinates: { row: 200, col: 50 },
+        x: 200,
+        y: 50,
     },
     {
         id: 2,
         taken_seats: 0,
         total_seats: 4,
         reserved: false,
-        coordinates: { row: 0, col: 200 },
+        x: 0,
+        y: 200,
     },
     {
         id: 3,
         taken_seats: 5,
         total_seats: 6,
         reserved: false,
-        coordinates: { row: 300, col: 1 },
+        x: 300,
+        y: 0,
     },
     {
         id: 4,
         taken_seats: 0,
         total_seats: 6,
         reserved: true,
-        coordinates: { row: 3, col: 5 },
+        x: 49,
+        y: 0,
     },
 ];
 
@@ -112,8 +116,9 @@ const location_placeholders = structuredClone(location);
                         type="text"
                         value={location.neighborhood}
                     />
-                    <label for="neighborhood" class="active">Neighborhood</label
-                    >
+                    <label for="neighborhood" class="active">
+                        Neighborhood
+                    </label>
                 </div>
                 <div class="field label border vertical-margin large-margin">
                     <input
@@ -138,9 +143,9 @@ const location_placeholders = structuredClone(location);
                                 class="table brown3"
                                 data-ui="#dialog"
                                 data-id={table.id}
-                                data-x={table.coordinates.row}
-                                data-y={table.coordinates.col}
-                                style={`transform:translate(${table.coordinates.row}px, ${table.coordinates.col}px);`}
+                                data-x={table.x}
+                                data-y={table.y}
+                                style={`transform:translate(${table.x}px, ${table.y}px);`}
                             >
                                 <span class="center middle-align">
                                     {table.id}
@@ -168,7 +173,7 @@ const location_placeholders = structuredClone(location);
                         <pre class="large-text"> <br />  bar</pre>
                     </div>
                 </div>
-                <button class="center" type="submit">Update</button>
+                <button class="center top-margin" type="submit">Update</button>
             </form>
         </article>
     </main>
@@ -189,74 +194,76 @@ const location_placeholders = structuredClone(location);
                 return alert("All fields are required");
             }
 
+            let updatedTables = [...tables];
+            tables.forEach((table, index) => {
+                const tableElement = document.querySelector(
+                    `[data-id="${table.id}"]`,
+                );
+                if (tableElement) {
+                    const x = parseFloat(tableElement.getAttribute("data-x"));
+                    const y = parseFloat(tableElement.getAttribute("data-y"));
+                    updatedTables[index] = {
+                        ...table,
+                        x: x,
+                        y: y,
+                    };
+                }
+            });
             if (
                 street_address === location.street_address &&
                 neighborhood === location.neighborhood &&
-                city === location.city
+                city === location.city &&
+                JSON.stringify(updatedTables) === JSON.stringify(tables)
             ) {
                 return alert("No changes detected");
             }
 
             console.log({ street_address, neighborhood, city });
-            console.log(tables);
         });
 
     document.addEventListener("DOMContentLoaded", function () {
-        var grids = document.getElementsByClassName("grid"); // Assuming all your grids have the class 'grid'
+        var grid = document.querySelector(".grid");
 
-        // Iterate over all elements with class 'table'
         var tables = document.querySelectorAll(".table");
         tables.forEach(function (table) {
             interact(table)
                 .draggable({
-                    // the top left corner of the element will be (0, 0)
                     origin: "parent",
                     snap: {
-                        // snap targets pay attention to the action's origin option
                         targets: [
                             interact.createSnapGrid({
-                                x: 50,
-                                y: 50,
+                                x: 25,
+                                y: 25,
                             }),
                         ],
                         relativePoints: [{ x: 0, y: 0 }],
                     },
                     restrict: {
-                        // restrictions *don't* pay attention to the action's origin option
-                        // so using 'parent' for both origin and restrict.restriction works
                         restriction: "parent",
                         elementRect: { top: 0, left: 0, bottom: 1, right: 1 },
                     },
                 })
                 .on("dragmove", function (event) {
-                    var target = event.target,
-                        // keep the dragged position in the data-x/data-y attributes
-                        x =
-                            (parseFloat(target.getAttribute("data-x")) || 0) +
-                            event.dx,
-                        y =
-                            (parseFloat(target.getAttribute("data-y")) || 0) +
-                            event.dy;
+                    const target = event.target;
+                    let x =
+                        (parseFloat(target.getAttribute("data-x")) || 0) +
+                        event.dx;
+                    let y =
+                        (parseFloat(target.getAttribute("data-y")) || 0) +
+                        event.dy;
 
                     x = Math.max(0, Math.min(x, 300));
                     y = Math.max(0, Math.min(y, 332));
 
-                    if (x > 199 && y > 149) {
-                        console.log("bar");
-                        x = 199;
-                        y = 149;
-                    } else if (x > 99 && x < 199 && y < 50) {
-                        y = 50;
+                    if ((x > 224 && y > 149) || (x > 99 && x < 199 && y < 50)) {
+                        return;
                     }
 
                     target.style.webkitTransform = target.style.transform =
                         "translate(" + x + "px," + y + "px)";
 
-                    // update the position attributes
                     target.setAttribute("data-x", x);
                     target.setAttribute("data-y", y);
-
-                    console.log(x, y);
                 });
         });
     });
