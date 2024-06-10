@@ -47,9 +47,31 @@ const tables = [
     {
         id: 1,
         location_uuid: "u3z",
-        available_seats: 2,
+        taken_seats: 2,
         total_seats: 4,
-        coordinates: { row: 1, col: 0 },
+        reserved: false,
+        coordinates: { row: 200, col: 50 },
+    },
+    {
+        id: 2,
+        taken_seats: 0,
+        total_seats: 4,
+        reserved: false,
+        coordinates: { row: 0, col: 200 },
+    },
+    {
+        id: 3,
+        taken_seats: 5,
+        total_seats: 6,
+        reserved: false,
+        coordinates: { row: 300, col: 1 },
+    },
+    {
+        id: 4,
+        taken_seats: 0,
+        total_seats: 6,
+        reserved: true,
+        coordinates: { row: 3, col: 5 },
     },
 ];
 
@@ -106,22 +128,45 @@ const location_placeholders = structuredClone(location);
 
                 <div><span>Location ID: {location_id}</span></div>
                 <div
-                    id="seating-chart"
-                    class="seating-chart medium-width center-align center"
+                    id="grid"
+                    class="medium-width border"
+                    style="height: 300px;"
                 >
                     {
                         tables.map((table) => (
                             <div
-                                class="table"
+                                class="table brown3"
+                                data-ui="#dialog"
                                 data-id={table.id}
-                                draggable="true"
-                                data-x="2"
-                                data-y="1"
+                                data-x={table.coordinates.row}
+                                data-y={table.coordinates.col}
+                                style={`transform:translate(${table.coordinates.row}px, ${table.coordinates.col}px);`}
                             >
-                                {table.id}
+                                <span class="center middle-align">
+                                    {table.id}
+                                </span>
                             </div>
                         ))
                     }
+                    <div
+                        id="entrance"
+                        class="black"
+                        style="transform:translate(142px, 0px);  width:60px; height:5px;"
+                    >
+                    </div>
+
+                    <div
+                        class="black"
+                        style="transform:translate(285px, 205px);  width:65px; height:7px;"
+                    >
+                    </div>
+
+                    <div
+                        class="black"
+                        style="transform:translate(285px, 200px);  width:7px; height:65px;"
+                    >
+                        <pre class="large-text"> <br />  bar</pre>
+                    </div>
                 </div>
                 <button class="center" type="submit">Update</button>
             </form>
@@ -156,62 +201,77 @@ const location_placeholders = structuredClone(location);
             console.log(tables);
         });
 
-    document.addEventListener("DOMContentLoaded", () => {
-        const gridContainer = document.getElementById("seating-chart");
-        const yellowCells = document.querySelectorAll(".table");
+    document.addEventListener("DOMContentLoaded", function () {
+        var grids = document.getElementsByClassName("grid"); // Assuming all your grids have the class 'grid'
 
-        // Define the grid size
-        const gridSize = 5; // Adjust based on your grid cell size
+        // Iterate over all elements with class 'table'
+        var tables = document.querySelectorAll(".table");
+        tables.forEach(function (table) {
+            interact(table)
+                .draggable({
+                    // the top left corner of the element will be (0, 0)
+                    origin: "parent",
+                    snap: {
+                        // snap targets pay attention to the action's origin option
+                        targets: [
+                            interact.createSnapGrid({
+                                x: 50,
+                                y: 50,
+                            }),
+                        ],
+                        relativePoints: [{ x: 0, y: 0 }],
+                    },
+                    restrict: {
+                        // restrictions *don't* pay attention to the action's origin option
+                        // so using 'parent' for both origin and restrict.restriction works
+                        restriction: "parent",
+                        elementRect: { top: 0, left: 0, bottom: 1, right: 1 },
+                    },
+                })
+                .on("dragmove", function (event) {
+                    var target = event.target,
+                        // keep the dragged position in the data-x/data-y attributes
+                        x =
+                            (parseFloat(target.getAttribute("data-x")) || 0) +
+                            event.dx,
+                        y =
+                            (parseFloat(target.getAttribute("data-y")) || 0) +
+                            event.dy;
 
-        // Optional: Define an offset if needed
-        const gridOffset = { x: 0, y: 0 };
+                    x = Math.max(0, Math.min(x, 300));
+                    y = Math.max(0, Math.min(y, 332));
 
-        // Initialize the grid snapper
-        const gridSnapper = interact.snappers.grid({
-            x: gridSize,
-            y: gridSize,
-            offset: gridOffset,
-            limits: {
-                top: 0,
-                left: 0,
-                bottom: gridContainer.offsetHeight,
-                right: gridContainer.offsetWidth,
-            },
-        });
+                    if (x > 199 && y > 149) {
+                        console.log("bar");
+                        x = 199;
+                        y = 149;
+                    } else if (x > 99 && x < 199 && y < 50) {
+                        y = 50;
+                    }
 
-        // Apply draggable behavior with snapping to the grid
-        yellowCells.forEach((cell) => {
-            interact(cell).draggable({
-                modifiers: [
-                    interact.modifiers.snap({ targets: [gridSnapper] }),
-                    interact.modifiers.restrictRect({ restriction: "parent" }), // Optionally restrict movement to the grid container
-                ],
-                autoScroll: true, // Enable automatic scrolling
-            });
+                    target.style.webkitTransform = target.style.transform =
+                        "translate(" + x + "px," + y + "px)";
+
+                    // update the position attributes
+                    target.setAttribute("data-x", x);
+                    target.setAttribute("data-y", y);
+
+                    console.log(x, y);
+                });
         });
     });
 </script>
 
 <style>
-    .seating-chart {
-        display: grid;
-        grid-template-columns: repeat(
-            5,
-            1fr
-        ); /* Creates 5 columns of equal width */
-        grid-template-rows: repeat(5, 1fr); /* Creates 5 rows of equal height */
-        gap: 10px; /* Space between grid cells */
-    }
-
     .table {
-        width: 75px; /* Adjust size as needed */
-        height: 75px;
-        background-color: #ffd700; /* Example color */
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        padding: 1px;
+        background-clip: content-box;
         border-radius: 50%;
         display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 20px; /* Adjust font size as needed */
+        font-size: 20px;
     }
 
     .table:hover {
