@@ -50,7 +50,7 @@ const tables = [
         taken_seats: 2,
         total_seats: 4,
         reserved: false,
-        x: 200,
+        x: 150,
         y: 50,
     },
     {
@@ -66,7 +66,7 @@ const tables = [
         taken_seats: 5,
         total_seats: 6,
         reserved: false,
-        x: 300,
+        x: 270,
         y: 0,
     },
     {
@@ -88,7 +88,7 @@ const location_placeholders = structuredClone(location);
             <article
                 class="top-margin medium-elevate medium-width center center-align middle-align surface"
             >
-                <h4 class="freeman-regular">Edit location</h4>
+                <h2 class="freeman-regular">Edit location</h2>
             </article>
         </div>
 
@@ -131,7 +131,6 @@ const location_placeholders = structuredClone(location);
                     <label for="city" class="active">City</label>
                 </div>
 
-                <div><span>Location ID: {location_id}</span></div>
                 <div
                     id="grid"
                     class="medium-width border"
@@ -139,18 +138,16 @@ const location_placeholders = structuredClone(location);
                 >
                     {
                         tables.map((table) => (
-                            <div
-                                class="table brown3"
-                                data-ui="#dialog"
+                            <button
+                                class="absolute circle no-margin table brown3 extra black-text"
+                                type="button"
                                 data-id={table.id}
                                 data-x={table.x}
                                 data-y={table.y}
                                 style={`transform:translate(${table.x}px, ${table.y}px);`}
                             >
-                                <span class="center middle-align">
-                                    {table.id}
-                                </span>
-                            </div>
+                                {table.id}
+                            </button>
                         ))
                     }
                     <div
@@ -161,25 +158,94 @@ const location_placeholders = structuredClone(location);
                     </div>
 
                     <div
-                        class="black"
+                        class="black square"
                         style="transform:translate(285px, 205px);  width:65px; height:7px;"
                     >
                     </div>
 
                     <div
-                        class="black"
-                        style="transform:translate(285px, 200px);  width:7px; height:65px;"
+                        class="black square"
+                        style="transform:translate(285px, 200px);  width:7px; height:63px;"
                     >
                         <pre class="large-text"> <br />  bar</pre>
                     </div>
                 </div>
-                <button class="center top-margin" type="submit">Update</button>
+
+                <span class="wrap center-align bottom-margin"
+                    ><a class="primary-text" href="/register">Add a new table</a
+                    ></span
+                >
+                <button class="center no-margin" type="submit">Update</button>
             </form>
         </article>
+
+        <div id="blur" class="overlay blur"></div>
+        <dialog id="dialog" class="center small-width">
+            <form id="remove-table-form">
+                <h5 class="center-align bottom-margin">Removal</h5>
+                <p class="center-align">
+                    Are you sure that you want to remove
+                    <span id="form-table-id" class="bold"></span>?
+                </p>
+
+                <nav class="center-align">
+                    <button type="submit" data-ui="#dialog">Confirm</button>
+                    <button type="button" class="transparent" data-ui="#dialog">
+                        Cancel
+                    </button>
+                </nav>
+            </form>
+        </dialog>
     </main>
 </Layout>
 
 <script define:vars={{ location, tables }}>
+    document.addEventListener("DOMContentLoaded", function () {
+        var grid = document.querySelector(".grid");
+
+        var tables = document.querySelectorAll(".table");
+        tables.forEach(function (table) {
+            interact(table)
+                .draggable({
+                    origin: "parent",
+                    restrict: {
+                        restriction: "parent",
+                        elementRect: { top: 0, left: 0, bottom: 1, right: 1 },
+                    },
+                })
+                .on("dragmove", function (event) {
+                    const target = event.target;
+                    let x =
+                        (parseFloat(target.getAttribute("data-x")) || 0) +
+                        event.dx;
+                    let y =
+                        (parseFloat(target.getAttribute("data-y")) || 0) +
+                        event.dy;
+
+                    x = Math.max(0, Math.min(x, 300));
+                    y = Math.max(0, Math.min(y, 332));
+
+                    if ((x > 224 && y > 149) || (x > 99 && x < 199 && y < 50)) {
+                        return;
+                    }
+
+                    target.style.webkitTransform = target.style.transform =
+                        "translate(" + x + "px," + y + "px)";
+
+                    target.setAttribute("data-x", x);
+                    target.setAttribute("data-y", y);
+                    console.log("Table moved to", x, y);
+                })
+                .on("tap", function (event) {
+                    ui("#dialog");
+                    const id = event.target.getAttribute("data-id");
+                    selected_table_id = id;
+                    document.getElementById("form-table-id").innerHTML =
+                        `Table ${selected_table_id}`;
+                });
+        });
+    });
+
     document
         .getElementById("edit-location-form")
         .addEventListener("submit", async (event) => {
@@ -221,69 +287,20 @@ const location_placeholders = structuredClone(location);
             console.log({ street_address, neighborhood, city });
         });
 
-    document.addEventListener("DOMContentLoaded", function () {
-        var grid = document.querySelector(".grid");
-
-        var tables = document.querySelectorAll(".table");
-        tables.forEach(function (table) {
-            interact(table)
-                .draggable({
-                    origin: "parent",
-                    snap: {
-                        targets: [
-                            interact.createSnapGrid({
-                                x: 25,
-                                y: 25,
-                            }),
-                        ],
-                        relativePoints: [{ x: 0, y: 0 }],
-                    },
-                    restrict: {
-                        restriction: "parent",
-                        elementRect: { top: 0, left: 0, bottom: 1, right: 1 },
-                    },
-                })
-                .on("dragmove", function (event) {
-                    const target = event.target;
-                    let x =
-                        (parseFloat(target.getAttribute("data-x")) || 0) +
-                        event.dx;
-                    let y =
-                        (parseFloat(target.getAttribute("data-y")) || 0) +
-                        event.dy;
-
-                    x = Math.max(0, Math.min(x, 300));
-                    y = Math.max(0, Math.min(y, 332));
-
-                    if ((x > 224 && y > 149) || (x > 99 && x < 199 && y < 50)) {
-                        return;
-                    }
-
-                    target.style.webkitTransform = target.style.transform =
-                        "translate(" + x + "px," + y + "px)";
-
-                    target.setAttribute("data-x", x);
-                    target.setAttribute("data-y", y);
-                });
+    document
+        .getElementById("edit-location-form")
+        .addEventListener("submit", async (event) => {
+            event.preventDefault();
+            console.log("DELETE");
         });
-    });
 </script>
 
 <style>
     .table {
-        position: absolute;
-        width: 50px;
-        height: 50px;
-        padding: 1px;
-        background-clip: content-box;
-        border-radius: 50%;
-        display: flex;
-        font-size: 20px;
     }
 
     .table:hover {
         outline: 2px solid;
         outline-color: #ff0000;
-        cursor: pointer;
     }
 </style>

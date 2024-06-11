@@ -1,1 +1,58 @@
-Hi
+---
+import Layout from "@layouts/Layout.astro";
+import { supabase } from "@databases/supabase.js";
+
+const { cookies, redirect } = Astro;
+
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+
+if (!accessToken || !refreshToken) {
+    cookies.set("referrer-url", Astro.url.pathname, {
+        path: "/",
+    });
+    return redirect("/login");
+}
+
+const { data, error } = await supabase.auth.setSession({
+    refresh_token: refreshToken.value,
+    access_token: accessToken.value,
+});
+
+if (error) {
+    cookies.delete("sb-access-token", {
+        path: "/",
+    });
+    cookies.delete("sb-refresh-token", {
+        path: "/",
+    });
+
+    return redirect("/login");
+}
+
+const email = data.user?.email;
+if (email !== "admin@coffee.place") {
+    return redirect("/");
+}
+
+const reservations = [
+    {
+        table_id: "afno_141a_12",
+        neighborhood: "Kozari bok",
+        street_address: "Unska 3",
+        city: "Zagreb",
+    },
+    {
+        uuid: "upf42pv",
+        neighborhood: "Pituraša",
+        street_address: "Ulica Par Frulica 42",
+        city: "Prduša Vela",
+    },
+    {
+        uuid: "ugz9g",
+        neighborhood: "Bronx",
+        street_address: "Ulica grada Zagreba 9",
+        city: "Varaždin",
+    },
+];
+---

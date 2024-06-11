@@ -1,6 +1,5 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import LoginForm from "../components/LoginForm.astro";
+import Layout from "@layouts/Layout.astro";
 
 const { cookies, redirect } = Astro;
 
@@ -19,22 +18,35 @@ if (!cookies.get("referrer-url")) {
 ---
 
 <Layout title="Log in">
-    <h1>Log in</h1>
-    <p>New here? <a href="/register">Create an account</a></p>
-    <!-- <form action="/api/auth/login" method="post"> -->
-    <dialog id="dialog" class="active enter small-width">
-        <form id="login-form">
-            <div class="field label border">
-                <input id="email" name="email" type="email" />
-                <label for="email">E-mail</label>
-            </div>
-            <div class="field label border">
-                <input id="password" name="password" type="password" />
-                <label for="password">Password</label>
-            </div>
-            <button type="submit">Login</button>
-        </form>
-    </dialog>
+    <main>
+        <div class="center-align vertical-margin large-margin">
+            <article
+                class="top-margin medium-elevate medium-width center center-align middle-align surface"
+            >
+                <h2 class="freeman-regular">Log in ☕️</h2>
+            </article>
+        </div>
+
+        <div class="medium-width center surface round large-padding shadow">
+            <form id="login-form">
+                <div class="field label border margin">
+                    <input id="email" name="email" type="email" />
+                    <label for="email">E-mail</label>
+                </div>
+                <div class="field label border margin">
+                    <input id="password" name="password" type="password" />
+                    <label for="password">Password</label>
+                </div>
+                <button class="center no-margin" type="submit">Login</button>
+                <span class="wrap center-align top-margin small-text"
+                    >New here? <a class="primary-text" href="/register"
+                        >Create an account</a
+                    ></span
+                >
+            </form>
+        </div>
+        <!-- <form action="/api/auth/login" method="post"> -->
+    </main>
 </Layout>
 
 <script>
