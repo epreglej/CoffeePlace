@@ -35,13 +35,12 @@ if (email !== "admin@coffee.place") {
     return redirect("/");
 }
 
-const response = await fetch("http://localhost:8080/location", {
+const locations_response = await fetch("http://localhost:8080/location", {
     method: "GET",
-    headers: {"Content-Type": "application/json"}
-})
+    headers: { "Content-Type": "application/json" },
+});
 
 const locations = await response.json();
-    console.log(locations);
 ---
 
 <Layout title="CoffeePlace">

@@ -35,24 +35,18 @@ if (email !== "admin@coffee.place") {
     return redirect("/");
 }
 
+// const reservations_response = await fetch("", {
+//     method: "GET",
+//     headers: { "Content-Type": "application/json" },
+// });
+
+// const reservations_response = await response.json();
 const reservations = [
     {
-        table_id: "afno_141a_12",
+        id: "afno41a12",
         neighborhood: "Kozari bok",
         street_address: "Unska 3",
         city: "Zagreb",
-    },
-    {
-        table_id: "upf42pv",
-        neighborhood: "Pituraša",
-        street_address: "Ulica Par Frulica 42",
-        city: "Prduša Vela",
-    },
-    {
-        table_id: "ugz9g",
-        neighborhood: "Bronx",
-        street_address: "Ulica grada Zagreba 9",
-        city: "Varaždin",
     },
 ];
 ---
@@ -80,36 +74,86 @@ const reservations = [
         </div>
 
         <div
-            id="locations-container"
+            id="reservations-container"
             class="medium-width center surface round small-padding shadow"
         >
         </div>
+        <div id="blur" class="overlay blur"></div>
+        <dialog id="dialog" class="center middle small-width">
+            <form id="delete-reservation-form">
+                <h5 class="center-align bottom-margin">Reservation</h5>
+                <p class="center-align">
+                    <span>
+                        Are you sure that you want to delete reservation
+                    </span>
+                    <span id="form-reservation-id" class="bold"></span>?
+                </p>
+
+                <nav class="center-align">
+                    <button type="submit" data-ui="#dialog">Confirm</button>
+                    <button type="button" class="transparent" data-ui="#dialog">
+                        Cancel
+                    </button>
+                </nav>
+            </form>
+        </dialog>
     </main>
 </Layout>
 
 <script define:vars={{ reservations }}>
-    const reservationsContainer = document.getElementById(
-        "locations-container",
-    );
+    let selected_reservation_id = null;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        var reservations = document.querySelectorAll(".reservation");
+        reservations.forEach(function (reservation) {
+            interact(reservation).on("tap", function (event) {
+                ui("#dialog");
+                const id = event.target.getAttribute("data-id");
+                console.log(event.target);
+                selected_reservation_id = id;
+                document.getElementById("form-reservation-id").innerHTML =
+                    `Table ${id}`;
+            });
+        });
+    });
 
     function renderReservations(reservations) {
-        reservationsContainer.innerHTML = reservations
-            .map(
-                (reservation) => `
-            <div class="reservation margin small-margin">
-                <a href="/">
-                    <div class="wave no-round">
-                        <h6>${reservation.table_id}</h6>
-
+        document.getElementById("reservations-container").innerHTML =
+            reservations
+                .map(
+                    (reservation) => `
+            <div class="reservation horizontal-padding small-padding wave no-round" data-id="${reservation.id}">
+                        <h6>${reservation.id}</h6>
                         <span>
                             ${reservation.street_address}, ${reservation.neighborhood}, ${reservation.city}
                         </span>
-                    </div>
-                </a>
             </div>`,
-            )
-            .join("");
+                )
+                .join("");
     }
+
+    document
+        .getElementById("delete-reservation-form")
+        .addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            try {
+                const response = await fetch(
+                    "http://localhost:8080/table/reserved/" +
+                        selected_table_id +
+                        "/false",
+                    {
+                        method: "POST",
+                    },
+                );
+
+                if (response.status === 200) {
+                    window.location.reload();
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        });
 
     document.getElementById("search").addEventListener("keyup", (event) => {
         const filterValue = event.target.value.toLowerCase();
@@ -118,13 +162,6 @@ const reservations = [
         );
 
         renderReservations(filteredReservations);
-    });
-
-    document.addEventListener("DOMContentLoaded", function () {
-        var reservations = document.querySelectorAll(".reservation");
-        reservations.forEach(function (table) {
-            console.log("a");
-        });
     });
 
     renderReservations(reservations);

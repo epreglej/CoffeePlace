@@ -1,41 +1,21 @@
 ---
 import Layout from "@layouts/Layout.astro";
 
-// const locations = [
-//     {
-//         uuid: "u3z",
-//         neighborhood: "Kozari bok",
-//         street_address: "Unska 3",
-//         city: "Zagreb",
-//     },
-//     {
-//         uuid: "upf42pv",
-//         neighborhood: "Pituraša",
-//         street_address: "Ulica Par Frulica 42",
-//         city: "Prduša Vela",
-//     },
-//     {
-//         uuid: "ugz9g",
-//         neighborhood: "Bronx",
-//         street_address: "Ulica grada Zagreba 9",
-//         city: "Varaždin",
-//     },
-// ];
+const authentication_response = await fetch(
+    "http://localhost:8080/authenticate",
+    {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+    },
+);
 
-
-const response1 = await fetch("http://localhost:8080/authenticate", {
+const locations_response = await fetch("http://localhost:8080/location", {
     method: "GET",
-    headers: {"Content-Type": "application/json"}
-})
+    headers: { "Content-Type": "application/json" },
+});
 
-const response = await fetch("http://localhost:8080/location", {
-    method: "GET",
-    headers: {"Content-Type": "application/json"}
-})
-
-const locations = await response.json();
-    console.log(locations);
-
+const locations = await locations_response.json();
+console.log(locations);
 ---
 
 <Layout title="CoffeePlace">
