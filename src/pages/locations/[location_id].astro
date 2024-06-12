@@ -135,7 +135,7 @@ const tables = await tables_response.json();
         </dialog>
     </main>
 
-    <script define:vars={{ email, location_id, tables }}>
+    <script define:vars={{ location_id, tables }}>
         let selected_table_id = null;
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -165,7 +165,6 @@ const tables = await tables_response.json();
                 event.preventDefault();
 
                 const formData = new FormData();
-                formData.append("email", email);
                 formData.append("location-id", location_id);
                 formData.append("table-id", selected_table_id);
 

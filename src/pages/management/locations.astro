@@ -40,7 +40,7 @@ const locations_response = await fetch("http://localhost:8080/location", {
     headers: { "Content-Type": "application/json" },
 });
 
-const locations = await response.json();
+const locations = await locations_response.json();
 ---
 
 <Layout title="CoffeePlace">

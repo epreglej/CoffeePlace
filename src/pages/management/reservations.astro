@@ -35,20 +35,21 @@ if (email !== "admin@coffee.place") {
     return redirect("/");
 }
 
-// const reservations_response = await fetch("", {
-//     method: "GET",
-//     headers: { "Content-Type": "application/json" },
-// });
+const reservations_response = await fetch("http://localhost:8080/table/all", {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+});
 
-// const reservations_response = await response.json();
-const reservations = [
-    {
-        id: "afno41a12",
-        neighborhood: "Kozari bok",
-        street_address: "Unska 3",
-        city: "Zagreb",
-    },
-];
+const reservations = await reservations_response.json();
+console.log(reservations)
+// const reservations = [
+//     {
+//         id: "afno41a12",
+//         neighborhood: "Kozari bok",
+//         street_address: "Unska 3",
+//         city: "Zagreb",
+//     },
+// ];
 ---
 
 <Layout title="CoffeePlace">
@@ -125,7 +126,7 @@ const reservations = [
             <div class="reservation horizontal-padding small-padding wave no-round" data-id="${reservation.id}">
                         <h6>${reservation.id}</h6>
                         <span>
-                            ${reservation.street_address}, ${reservation.neighborhood}, ${reservation.city}
+                            ${reservation.location.street_address}, ${reservation.location.neighborhood}, ${reservation.location.city}
                         </span>
             </div>`,
                 )
@@ -140,7 +141,7 @@ const reservations = [
             try {
                 const response = await fetch(
                     "http://localhost:8080/table/reserved/" +
-                        selected_table_id +
+                        selected_reservation_id +
                         "/false",
                     {
                         method: "POST",

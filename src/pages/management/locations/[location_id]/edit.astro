@@ -36,49 +36,6 @@ if (email !== "admin@coffee.place") {
     return redirect("/");
 }
 
-// const location = {
-//     uuid: "u3z",
-//     neighborhood: "Vrbik",
-//     street_address: "Unska 3",
-//     city: "Zagreb",
-// };
-
-// const tables = [
-//     {
-//         id: 1,
-//         location_uuid: "u3z",
-//         taken_seats: 2,
-//         total_seats: 4,
-//         reserved: false,
-//         x: 150,
-//         y: 50,
-//     },
-//     {
-//         id: 2,
-//         taken_seats: 0,
-//         total_seats: 4,
-//         reserved: false,
-//         x: 0,
-//         y: 200,
-//     },
-//     {
-//         id: 3,
-//         taken_seats: 5,
-//         total_seats: 6,
-//         reserved: false,
-//         x: 270,
-//         y: 0,
-//     },
-//     {
-//         id: 4,
-//         taken_seats: 0,
-//         total_seats: 6,
-//         reserved: true,
-//         x: 49,
-//         y: 0,
-//     },
-// ];
-
 const response = await fetch("http://localhost:8080/location/" + location_id, {
     method: "GET",
     headers: {"Content-Type": "application/json"}
@@ -226,6 +183,8 @@ const location_placeholders = structuredClone(location);
 </Layout>
 
 <script define:vars={{ location, tables, location_id }}>
+    let selected_table_id;
+    let name;
     document.addEventListener("DOMContentLoaded", function () {
         var grid = document.querySelector(".grid");
 
@@ -279,12 +238,11 @@ const location_placeholders = structuredClone(location);
                 // API CALL
 
                 try {
-                    const response = await fetch("/api/reservation", {
+                    const response = await fetch("http://localhost:8080/table/create/" + location_id + "/" + "Mislav", {
                         method: "POST",
-                        body: formData,
                     });
 
-                    if (response.status === 303) {
+                    if (response.status === 200) {
                         window.location.reload();
                     }
 
@@ -306,12 +264,11 @@ const location_placeholders = structuredClone(location);
                 // API CALL
 
                 try {
-                    const response = await fetch("/api/reservation", {
-                        method: "POST",
-                        body: formData,
+                    const response = await fetch("http://localhost:8080/table/delete/" + selected_table_id, {
+                        method: "DELETE"
                     });
 
-                    if (response.status === 303) {
+                    if (response.status === 200) {
                         window.location.reload();
                     }
 
@@ -319,9 +276,10 @@ const location_placeholders = structuredClone(location);
                     //
                     //
                 } catch (error) {
-                    alert(
-                        "An unexpected error occurred. Please try again later.",
-                    );
+                    console.log(error);
+                    // alert(
+                    //     "An unexpected error occurred. Please try again later.",
+                    // );
                 }
             });
     });
@@ -347,8 +305,8 @@ const location_placeholders = structuredClone(location);
                     `[data-id="${table.id}"]`,
                 );
                 if (tableElement) {
-                    const x = parseFloat(tableElement.getAttribute("data-x"));
-                    const y = parseFloat(tableElement.getAttribute("data-y"));
+                    const x = parseInt(tableElement.getAttribute("data-x"));
+                    const y = parseInt(tableElement.getAttribute("data-y"));
                     updatedTables[index] = {
                         ...table,
                         x: x,
@@ -370,12 +328,29 @@ const location_placeholders = structuredClone(location);
             formData.forEach((value, key) => object[key] = value);
             var json = JSON.stringify(object);
             console.log(json)
-            const response = await fetch("http://localhost:8080/customer/update", {
+            let response = await fetch("http://localhost:8080/customer/update", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: json
             })
             console.log(response)
+
+            for (const table of updatedTables) {
+                let tableResponse = await fetch("http://localhost:8080/table/update/" + table.id + "/" + table.x + "/" + table.y, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: json,
+                });
+                console.log(tableResponse);
+            }
+
+            // tables.forEach(table => {
+            //     let response = await fetch("http://localhost:8080/customer/update", {
+            //     method: "POST",
+            //     headers: {"Content-Type": "application/json"},
+            //     body: json
+            // })
+            // });
         });
 </script>
 
