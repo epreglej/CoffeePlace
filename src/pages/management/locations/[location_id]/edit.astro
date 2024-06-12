@@ -170,17 +170,26 @@ const location_placeholders = structuredClone(location);
                         <pre class="large-text"> <br />  bar</pre>
                     </div>
                 </div>
-
-                <span class="wrap center-align bottom-margin"
-                    ><a class="primary-text" href="/register">Add a new table</a
-                    ></span
+                <div class="space"></div>
+                <button
+                    class="center no-margin"
+                    type="submit"
+                    style={"transform:translate(-47px, 33px);"}>Update</button
                 >
-                <button class="center no-margin" type="submit">Update</button>
+            </form>
+            <div class="space"></div>
+            <form
+                id="add-table-form"
+                style={"transform:translate(0px, -70px);"}
+            >
+                <button class="center no-margin secondary small" type="submit"
+                    ><i>table_restaurant</i>Add a new table</button
+                >
             </form>
         </article>
 
         <div id="blur" class="overlay blur"></div>
-        <dialog id="dialog" class="center small-width">
+        <dialog id="dialog" class="center middle small-width">
             <form id="remove-table-form">
                 <h5 class="center-align bottom-margin">Removal</h5>
                 <p class="center-align">
@@ -234,7 +243,6 @@ const location_placeholders = structuredClone(location);
 
                     target.setAttribute("data-x", x);
                     target.setAttribute("data-y", y);
-                    console.log("Table moved to", x, y);
                 })
                 .on("tap", function (event) {
                     ui("#dialog");
@@ -244,6 +252,60 @@ const location_placeholders = structuredClone(location);
                         `Table ${selected_table_id}`;
                 });
         });
+
+        document
+            .getElementById("add-table-form")
+            .addEventListener("submit", async (event) => {
+                event.preventDefault();
+                console.log("Added table");
+                // API CALL
+
+                try {
+                    const response = await fetch("/api/reservation", {
+                        method: "POST",
+                        body: formData,
+                    });
+
+                    if (response.status === 303) {
+                        window.location.reload();
+                    }
+
+                    // handle error ako ne uspije
+                    //
+                    //
+                } catch (error) {
+                    alert(
+                        "An unexpected error occurred. Please try again later.",
+                    );
+                }
+            });
+
+        document
+            .getElementById("remove-table-form")
+            .addEventListener("submit", async (event) => {
+                event.preventDefault();
+                console.log("Removed table");
+                // API CALL
+
+                try {
+                    const response = await fetch("/api/reservation", {
+                        method: "POST",
+                        body: formData,
+                    });
+
+                    if (response.status === 303) {
+                        window.location.reload();
+                    }
+
+                    // handle error ako ne uspije
+                    //
+                    //
+                } catch (error) {
+                    alert(
+                        "An unexpected error occurred. Please try again later.",
+                    );
+                }
+            });
     });
 
     document
@@ -285,13 +347,6 @@ const location_placeholders = structuredClone(location);
             }
 
             console.log({ street_address, neighborhood, city });
-        });
-
-    document
-        .getElementById("edit-location-form")
-        .addEventListener("submit", async (event) => {
-            event.preventDefault();
-            console.log("DELETE");
         });
 </script>
 

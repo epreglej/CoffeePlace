@@ -47,29 +47,33 @@ const tables = [
         location_uuid: "u3z",
         taken_seats: 2,
         total_seats: 4,
-        reserved: false,
-        coordinates: { row: 200, col: 50 },
+        reserved: "false",
+        x: 150,
+        y: 50,
     },
     {
         id: 2,
         taken_seats: 0,
         total_seats: 4,
-        reserved: false,
-        coordinates: { row: 0, col: 200 },
+        reserved: "false",
+        x: 0,
+        y: 200,
     },
     {
         id: 3,
         taken_seats: 5,
         total_seats: 6,
-        reserved: false,
-        coordinates: { row: 300, col: 1 },
+        reserved: "false",
+        x: 270,
+        y: 0,
     },
     {
         id: 4,
         taken_seats: 0,
         total_seats: 6,
-        reserved: true,
-        coordinates: { row: 3, col: 5 },
+        reserved: "true",
+        x: 49,
+        y: 0,
     },
 ];
 ---
@@ -80,110 +84,105 @@ const tables = [
             <article
                 class="top-margin medium-elevate medium-width center center-align middle-align surface"
             >
-                <h4 class="freeman-regular">Edit location</h4>
+                <h2 class="freeman-regular">
+                    Reservation<br />{location.neighborhood}
+                </h2>
             </article>
         </div>
 
-        <div><span>Location ID: {location_id}</span></div>
-        <!-- <div class="seating-chart medium-width center-align center"> -->
         <article
             class="vertical-margin medium-elevate medium-width center surface"
         >
             <div id="grid" class="medium-width border" style="height: 300px;">
                 {
                     tables.map((table) => (
-                        <div
-                            class={`table ${
-                                table.reserved
+                        <button
+                            class={`vertical absolute circle no-margin table extra black-text ${
+                                table.reserved === "true"
                                     ? "red6"
                                     : table.taken_seats === 0
                                       ? "green5"
                                       : "orange4"
                             }`}
-                            data-ui="#dialog"
+                            type="button"
                             data-id={table.id}
-                            style={`transform:translate(${table.coordinates.row}px, ${table.coordinates.col}px);`}
+                            data-x={table.x}
+                            data-y={table.y}
+                            data-reserved={table.reserved}
+                            data-taken-seats={table.taken_seats}
+                            data-total-seats={table.total_seats}
+                            style={`transform:translate(${table.x}px, ${table.y}px);`}
                         >
-                            <span class="center-align small-padding">
-                                {table.taken_seats}/{table.total_seats}
-                                <i class="small" style="margin-top:-15px;">
-                                    airline_seat_recline_normal
-                                </i>
-                            </span>
-                        </div>
+                            {table.taken_seats}/{table.total_seats}
+                            <i class="small">airline_seat_recline_normal</i>
+                        </button>
                     ))
                 }
                 <div
                     id="entrance"
                     class="black"
-                    style="transform:translate(138px, 0px);  width:75px; height:5px;"
+                    style="transform:translate(142px, 0px);  width:60px; height:5px;"
                 >
                 </div>
 
                 <div
-                    class="border"
-                    style="transform:translate(284px, 195px);  width:50px; height:90px;"
+                    class="black square"
+                    style="transform:translate(285px, 205px);  width:65px; height:7px;"
                 >
-                    bar
+                </div>
+
+                <div
+                    class="black square"
+                    style="transform:translate(285px, 200px);  width:7px; height:63px;"
+                >
+                    <pre class="large-text"> <br />  bar</pre>
                 </div>
             </div>
-
-            <div class="overlay blur"></div>
-            <dialog id="dialog" class="center small-width">
-                <form id="reservation-form">
-                    <h5 class="center-align bottom-margin">Reservation</h5>
-                    <p class="center-align">
-                        <span>Are you sure that you want to reserve</span>
-                        <span id="form-table-id" class="bold"></span>
-                        <span>for next 15 minutes?</span>
-                    </p>
-
-                    <nav class="center-align">
-                        <button type="submit" data-ui="#dialog">Confirm</button>
-                        <button
-                            type="button"
-                            class="transparent"
-                            data-ui="#dialog"
-                        >
-                            Cancel
-                        </button>
-                    </nav>
-                </form>
-            </dialog>
         </article>
+
+        <div id="blur" class="overlay blur"></div>
+        <dialog id="dialog" class="center middle small-width">
+            <form id="reservation-form">
+                <h5 class="center-align bottom-margin">Reservation</h5>
+                <p class="center-align">
+                    <span>Are you sure that you want to reserve</span>
+                    <span id="form-table-id" class="bold"></span>
+                    <span>for next 15 minutes?</span>
+                </p>
+
+                <nav class="center-align">
+                    <button type="submit" data-ui="#dialog">Confirm</button>
+                    <button type="button" class="transparent" data-ui="#dialog">
+                        Cancel
+                    </button>
+                </nav>
+            </form>
+        </dialog>
     </main>
 
     <script define:vars={{ email, location_id, tables }}>
-        document.addEventListener("DOMContentLoaded", function () {
-            const tables = document.querySelectorAll(".table");
-            tables.forEach((table) => {
-                const originalContent = table.innerHTML;
-                table.addEventListener("mouseenter", function (event) {
-                    table.innerHTML =
-                        "<span class='center middle-align'>" +
-                        event.currentTarget.getAttribute("data-id") +
-                        "</span>";
-                });
-                table.addEventListener("mouseleave", function (event) {
-                    table.innerHTML = originalContent;
-                });
-            });
-        });
-
         let selected_table_id = null;
 
-        let handleClick = (id) => {
-            selected_table_id = id;
-            console.log("Table clicked with ID:", id);
-            document.getElementById("form-table-id").innerHTML =
-                `Table ${selected_table_id}`;
-        };
+        document.addEventListener("DOMContentLoaded", function () {
+            var grid = document.querySelector(".grid");
 
-        const tableButtons = document.querySelectorAll(".table");
-        tableButtons.forEach((button) => {
-            button.addEventListener("click", () =>
-                handleClick(button.dataset.id),
-            );
+            var tables = document.querySelectorAll(".table");
+            tables.forEach(function (table) {
+                interact(table).on("tap", function (event) {
+                    const reserved = event.target.getAttribute("data-reserved");
+                    const taken_seats = parseInt(
+                        event.target.getAttribute("data-taken-seats"),
+                    );
+
+                    if (taken_seats === 0 && reserved === "false") {
+                        ui("#dialog");
+                        const id = event.target.getAttribute("data-id");
+                        selected_table_id = id;
+                        document.getElementById("form-table-id").innerHTML =
+                            `Table ${selected_table_id}`;
+                    }
+                });
+            });
         });
 
         document
@@ -210,10 +209,9 @@ const tables = [
                     //
                     //
                 } catch (error) {
-                    console.error("Error signing in:", error);
                     alert(
                         "An unexpected error occurred. Please try again later.",
-                    ); // Generic error message
+                    );
                 }
             });
     </script>
@@ -221,14 +219,6 @@ const tables = [
 
 <style>
     .table {
-        position: absolute;
-        width: 50px;
-        height: 50px;
-        padding: 1px;
-        background-clip: content-box;
-        border-radius: 50%;
-        display: flex;
-        font-size: 20px;
     }
 
     .table:hover {
