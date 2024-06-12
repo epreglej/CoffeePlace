@@ -36,7 +36,7 @@ const email = data.user?.email;
 // iz baze povuci detalje o specifičnom kafiću na temelju UUID iz linka
 const location = {
     id: "u3z",
-    neighborhood: "Kozari bok",
+    neighborhood: "Vrbik",
     street_address: "Unska 3",
     city: "Zagreb",
 };
@@ -164,8 +164,6 @@ const tables = [
         let selected_table_id = null;
 
         document.addEventListener("DOMContentLoaded", function () {
-            var grid = document.querySelector(".grid");
-
             var tables = document.querySelectorAll(".table");
             tables.forEach(function (table) {
                 interact(table).on("tap", function (event) {
@@ -195,10 +193,15 @@ const tables = [
                 formData.append("location-id", location_id);
                 formData.append("table-id", selected_table_id);
 
+                const plainFormData = Object.fromEntries(formData.entries());
+
                 try {
                     const response = await fetch("/api/reservation", {
                         method: "POST",
-                        body: formData,
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(plainFormData),
                     });
 
                     if (response.status === 303) {

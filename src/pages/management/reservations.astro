@@ -43,16 +43,89 @@ const reservations = [
         city: "Zagreb",
     },
     {
-        uuid: "upf42pv",
+        table_id: "upf42pv",
         neighborhood: "Pituraša",
         street_address: "Ulica Par Frulica 42",
         city: "Prduša Vela",
     },
     {
-        uuid: "ugz9g",
+        table_id: "ugz9g",
         neighborhood: "Bronx",
         street_address: "Ulica grada Zagreba 9",
         city: "Varaždin",
     },
 ];
 ---
+
+<Layout title="CoffeePlace">
+    <main>
+        <div class="center-align top-margin large-margin">
+            <article
+                class="top-margin medium-elevate medium-width center center-align middle-align surface"
+            >
+                <h2 class="freeman-regular">Reservation management 🕓</h2>
+            </article>
+        </div>
+
+        <div
+            class="field vertical-margin large center medium-width prefix small-elevate round fill"
+        >
+            <i class="front">search</i>
+            <input
+                id="search"
+                class="primary-hover surface"
+                type="text"
+                placeholder="Pretražite lokacije..."
+            />
+        </div>
+
+        <div
+            id="locations-container"
+            class="medium-width center surface round small-padding shadow"
+        >
+        </div>
+    </main>
+</Layout>
+
+<script define:vars={{ reservations }}>
+    const reservationsContainer = document.getElementById(
+        "locations-container",
+    );
+
+    function renderReservations(reservations) {
+        reservationsContainer.innerHTML = reservations
+            .map(
+                (reservation) => `
+            <div class="reservation margin small-margin">
+                <a href="/">
+                    <div class="wave no-round">
+                        <h6>${reservation.table_id}</h6>
+
+                        <span>
+                            ${reservation.street_address}, ${reservation.neighborhood}, ${reservation.city}
+                        </span>
+                    </div>
+                </a>
+            </div>`,
+            )
+            .join("");
+    }
+
+    document.getElementById("search").addEventListener("keyup", (event) => {
+        const filterValue = event.target.value.toLowerCase();
+        const filteredReservations = reservations.filter((reservation) =>
+            reservation.neighborhood.toLowerCase().includes(filterValue),
+        );
+
+        renderReservations(filteredReservations);
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        var reservations = document.querySelectorAll(".reservation");
+        reservations.forEach(function (table) {
+            console.log("a");
+        });
+    });
+
+    renderReservations(reservations);
+</script>
