@@ -35,26 +35,13 @@ if (email !== "admin@coffee.place") {
     return redirect("/");
 }
 
-const locations = [
-    {
-        uuid: "u3z",
-        neighborhood: "Kozari bok",
-        street_address: "Unska 3",
-        city: "Zagreb",
-    },
-    {
-        uuid: "upf42pv",
-        neighborhood: "Pituraša",
-        street_address: "Ulica Par Frulica 42",
-        city: "Prduša Vela",
-    },
-    {
-        uuid: "ugz9g",
-        neighborhood: "Bronx",
-        street_address: "Ulica grada Zagreba 9",
-        city: "Varaždin",
-    },
-];
+const response = await fetch("http://localhost:8080/location", {
+    method: "GET",
+    headers: {"Content-Type": "application/json"}
+})
+
+const locations = await response.json();
+    console.log(locations);
 ---
 
 <Layout title="CoffeePlace">

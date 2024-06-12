@@ -34,48 +34,68 @@ if (error) {
 const email = data.user?.email;
 
 // iz baze povuci detalje o specifičnom kafiću na temelju UUID iz linka
-const location = {
-    id: "u3z",
-    neighborhood: "Vrbik",
-    street_address: "Unska 3",
-    city: "Zagreb",
-};
+// const location = {
+//     id: "u3z",
+//     neighborhood: "Vrbik",
+//     street_address: "Unska 3",
+//     city: "Zagreb",
+// };
+console.log(location_id)
 
-const tables = [
-    {
-        id: 1,
-        location_uuid: "u3z",
-        taken_seats: 2,
-        total_seats: 4,
-        reserved: "false",
-        x: 150,
-        y: 50,
-    },
-    {
-        id: 2,
-        taken_seats: 0,
-        total_seats: 4,
-        reserved: "false",
-        x: 0,
-        y: 200,
-    },
-    {
-        id: 3,
-        taken_seats: 5,
-        total_seats: 6,
-        reserved: "false",
-        x: 270,
-        y: 0,
-    },
-    {
-        id: 4,
-        taken_seats: 0,
-        total_seats: 6,
-        reserved: "true",
-        x: 49,
-        y: 0,
-    },
-];
+const response = await fetch("http://localhost:8080/location/" + location_id, {
+    method: "GET",
+    headers: {"Content-Type": "application/json"}
+})
+
+const location = await response.json();
+    console.log(location)
+
+const response2 = await fetch("http://localhost:8080/table/" + location_id, {
+method: "GET",
+headers: {"Content-Type": "application/json"}
+})
+
+const tables = await response2.json();
+    console.log(tables)
+
+// const tables = [
+//     {
+//         id: 1,
+//         location_uuid: "u3z",
+//         taken_seats: 2,
+//         total_seats: 4,
+//         reserved: "false",
+//         x: 150,
+//         y: 50,
+//     },
+//     {
+//         id: 2,
+//         taken_seats: 0,
+//         total_seats: 4,
+//         reserved: "false",
+//         x: 0,
+//         y: 200,
+//     },
+//     {
+//         id: 3,
+//         taken_seats: 5,
+//         total_seats: 6,
+//         reserved: "false",
+//         x: 270,
+//         y: 0,
+//     },
+//     {
+//         id: 4,
+//         taken_seats: 0,
+//         total_seats: 6,
+//         reserved: "true",
+//         x: 49,
+//         y: 0,
+//     },
+// ];
+
+
+
 ---
 
 <Layout title="CoffeePlace">
@@ -106,6 +126,7 @@ const tables = [
                             }`}
                             type="button"
                             data-id={table.id}
+                            data-name={table.name}
                             data-x={table.x}
                             data-y={table.y}
                             data-reserved={table.reserved}
@@ -175,9 +196,10 @@ const tables = [
                     if (taken_seats === 0 && reserved === "false") {
                         ui("#dialog");
                         const id = event.target.getAttribute("data-id");
+                        const name = event.target.getAttribute("data-name")
                         selected_table_id = id;
                         document.getElementById("form-table-id").innerHTML =
-                            `Table ${selected_table_id}`;
+                            `Table ${name}`;
                     }
                 });
             });
@@ -196,25 +218,28 @@ const tables = [
                 const plainFormData = Object.fromEntries(formData.entries());
 
                 try {
-                    const response = await fetch("/api/reservation", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(plainFormData),
+                    const response = await fetch("http://localhost:8080/table/reserved/" + selected_table_id + "/true", {
+                        method: "POST"
                     });
+                    // const response = await fetch("", {
+                    //     method: "POST",
+                    //     headers: {
+                    //         "Content-Type": "application/json",
+                    //     },
+                    //     body: JSON.stringify(plainFormData),
+                    // });
 
-                    if (response.status === 303) {
+                    if (response.status === 200) {
                         window.location.reload();
                     }
+
+                    
 
                     // handle error ako ne uspije
                     //
                     //
                 } catch (error) {
-                    alert(
-                        "An unexpected error occurred. Please try again later.",
-                    );
+                    console.log(error)
                 }
             });
     </script>
