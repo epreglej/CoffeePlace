@@ -41,15 +41,7 @@ const reservations_response = await fetch("http://localhost:8080/table/all", {
 });
 
 const reservations = await reservations_response.json();
-console.log(reservations)
-// const reservations = [
-//     {
-//         id: "afno41a12",
-//         neighborhood: "Kozari bok",
-//         street_address: "Unska 3",
-//         city: "Zagreb",
-//     },
-// ];
+console.log(reservations);
 ---
 
 <Layout title="CoffeePlace">
