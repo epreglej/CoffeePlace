@@ -36,48 +36,21 @@ if (email !== "admin@coffee.place") {
     return redirect("/");
 }
 
-const location = {
-    uuid: "u3z",
-    neighborhood: "Vrbik",
-    street_address: "Unska 3",
-    city: "Zagreb",
-};
+const response = await fetch("http://localhost:8080/location/" + location_id, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+});
 
-const tables = [
-    {
-        id: 1,
-        location_uuid: "u3z",
-        taken_seats: 2,
-        total_seats: 4,
-        reserved: false,
-        x: 150,
-        y: 50,
-    },
-    {
-        id: 2,
-        taken_seats: 0,
-        total_seats: 4,
-        reserved: false,
-        x: 0,
-        y: 200,
-    },
-    {
-        id: 3,
-        taken_seats: 5,
-        total_seats: 6,
-        reserved: false,
-        x: 270,
-        y: 0,
-    },
-    {
-        id: 4,
-        taken_seats: 0,
-        total_seats: 6,
-        reserved: true,
-        x: 49,
-        y: 0,
-    },
-];
+const location = await response.json();
+console.log(location);
+
+const response2 = await fetch("http://localhost:8080/table/" + location_id, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+});
+
+const tables = await response2.json();
+console.log(tables);
 
 const location_placeholders = structuredClone(location);
 ---
@@ -142,11 +115,12 @@ const location_placeholders = structuredClone(location);
                                 class="absolute circle no-margin table brown3 extra black-text"
                                 type="button"
                                 data-id={table.id}
+                                data-name={table.name}
                                 data-x={table.x}
                                 data-y={table.y}
                                 style={`transform:translate(${table.x}px, ${table.y}px);`}
                             >
-                                {table.id}
+                                {table.name}
                             </button>
                         ))
                     }
@@ -178,18 +152,38 @@ const location_placeholders = structuredClone(location);
                 >
             </form>
             <div class="space"></div>
-            <form
-                id="add-table-form"
-                style={"transform:translate(0px, -70px);"}
-            >
-                <button class="center no-margin secondary small" type="submit"
+            <form id="table-form" style={"transform:translate(0px, -70px);"}>
+                <button
+                    id="add-table"
+                    class="center no-margin secondary small"
+                    type="button"
+                    data-ui="#add-table-dialog"
                     ><i>table_restaurant</i>Add a new table</button
                 >
             </form>
         </article>
 
         <div id="blur" class="overlay blur"></div>
-        <dialog id="dialog" class="center middle small-width">
+        <dialog id="add-table-dialog" class="center middle small-width">
+            <form id="add-table-form">
+                <h5 class="center-align bottom-margin">Add</h5>
+                <div class="field label border margin">
+                    <input id="name" name="name" type="text" />
+                    <label for="name">Table name</label>
+                </div>
+                <button class="center no-margin" type="submit">Create</button>
+                <button
+                    type="button"
+                    class="transparent"
+                    data-ui="#add-table-dialog"
+                >
+                    Cancel
+                </button>
+            </form>
+        </dialog>
+
+        <div id="blur" class="overlay blur"></div>
+        <dialog id="remove-table-dialog" class="center middle small-width">
             <form id="remove-table-form">
                 <h5 class="center-align bottom-margin">Removal</h5>
                 <p class="center-align">
@@ -208,7 +202,9 @@ const location_placeholders = structuredClone(location);
     </main>
 </Layout>
 
-<script define:vars={{ location, tables }}>
+<script define:vars={{ location, tables, location_id }}>
+    let selected_table_id;
+    let name;
     document.addEventListener("DOMContentLoaded", function () {
         var grid = document.querySelector(".grid");
 
@@ -245,11 +241,12 @@ const location_placeholders = structuredClone(location);
                     target.setAttribute("data-y", y);
                 })
                 .on("tap", function (event) {
-                    ui("#dialog");
+                    ui("#remove-table-dialog");
                     const id = event.target.getAttribute("data-id");
+                    const name = event.target.getAttribute("data-name");
                     selected_table_id = id;
                     document.getElementById("form-table-id").innerHTML =
-                        `Table ${selected_table_id}`;
+                        `Table ${name}`;
                 });
         });
 
@@ -257,22 +254,23 @@ const location_placeholders = structuredClone(location);
             .getElementById("add-table-form")
             .addEventListener("submit", async (event) => {
                 event.preventDefault();
-                console.log("Added table");
-                // API CALL
+
+                const formData = new FormData(event.target);
 
                 try {
-                    const response = await fetch("/api/reservation", {
-                        method: "POST",
-                        body: formData,
-                    });
+                    const response = await fetch(
+                        "http://localhost:8080/table/create/" +
+                            location_id +
+                            "/" +
+                            formData.get("name"),
+                        {
+                            method: "POST",
+                        },
+                    );
 
-                    if (response.status === 303) {
+                    if (response.status === 200) {
                         window.location.reload();
                     }
-
-                    // handle error ako ne uspije
-                    //
-                    //
                 } catch (error) {
                     alert(
                         "An unexpected error occurred. Please try again later.",
@@ -284,22 +282,19 @@ const location_placeholders = structuredClone(location);
             .getElementById("remove-table-form")
             .addEventListener("submit", async (event) => {
                 event.preventDefault();
-                console.log("Removed table");
-                // API CALL
 
                 try {
-                    const response = await fetch("/api/reservation", {
-                        method: "POST",
-                        body: formData,
-                    });
+                    const response = await fetch(
+                        "http://localhost:8080/table/delete/" +
+                            selected_table_id,
+                        {
+                            method: "DELETE",
+                        },
+                    );
 
-                    if (response.status === 303) {
+                    if (response.status === 200) {
                         window.location.reload();
                     }
-
-                    // handle error ako ne uspije
-                    //
-                    //
                 } catch (error) {
                     alert(
                         "An unexpected error occurred. Please try again later.",
@@ -314,6 +309,7 @@ const location_placeholders = structuredClone(location);
             event.preventDefault();
 
             const formData = new FormData(event.target);
+            formData.append("uuid", location_id);
             const street_address = formData.get("street_address");
             const neighborhood = formData.get("neighborhood");
             const city = formData.get("city");
@@ -328,8 +324,8 @@ const location_placeholders = structuredClone(location);
                     `[data-id="${table.id}"]`,
                 );
                 if (tableElement) {
-                    const x = parseFloat(tableElement.getAttribute("data-x"));
-                    const y = parseFloat(tableElement.getAttribute("data-y"));
+                    const x = parseInt(tableElement.getAttribute("data-x"));
+                    const y = parseInt(tableElement.getAttribute("data-y"));
                     updatedTables[index] = {
                         ...table,
                         x: x,
@@ -346,7 +342,37 @@ const location_placeholders = structuredClone(location);
                 return alert("No changes detected");
             }
 
-            console.log({ street_address, neighborhood, city });
+            console.log(JSON.stringify(formData));
+            var object = {};
+            formData.forEach((value, key) => (object[key] = value));
+            var json = JSON.stringify(object);
+            console.log(json);
+            let response = await fetch(
+                "http://localhost:8080/customer/update",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: json,
+                },
+            );
+            console.log(response);
+
+            for (const table of updatedTables) {
+                let tableResponse = await fetch(
+                    "http://localhost:8080/table/update/" +
+                        table.id +
+                        "/" +
+                        table.x +
+                        "/" +
+                        table.y,
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: json,
+                    },
+                );
+                console.log(tableResponse);
+            }
         });
 </script>
 

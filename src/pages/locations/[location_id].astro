@@ -31,51 +31,25 @@ if (error) {
     return redirect("/login");
 }
 
-const email = data.user?.email;
+const location_response = await fetch(
+    "http://localhost:8080/location/" + location_id,
+    {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+    },
+);
 
-// iz baze povuci detalje o specifičnom kafiću na temelju UUID iz linka
-const location = {
-    id: "u3z",
-    neighborhood: "Vrbik",
-    street_address: "Unska 3",
-    city: "Zagreb",
-};
+const location = await location_response.json();
 
-const tables = [
+const tables_response = await fetch(
+    "http://localhost:8080/table/" + location_id,
     {
-        id: 1,
-        location_uuid: "u3z",
-        taken_seats: 2,
-        total_seats: 4,
-        reserved: "false",
-        x: 150,
-        y: 50,
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
     },
-    {
-        id: 2,
-        taken_seats: 0,
-        total_seats: 4,
-        reserved: "false",
-        x: 0,
-        y: 200,
-    },
-    {
-        id: 3,
-        taken_seats: 5,
-        total_seats: 6,
-        reserved: "false",
-        x: 270,
-        y: 0,
-    },
-    {
-        id: 4,
-        taken_seats: 0,
-        total_seats: 6,
-        reserved: "true",
-        x: 49,
-        y: 0,
-    },
-];
+);
+
+const tables = await tables_response.json();
 ---
 
 <Layout title="CoffeePlace">
@@ -106,6 +80,7 @@ const tables = [
                             }`}
                             type="button"
                             data-id={table.id}
+                            data-name={table.name}
                             data-x={table.x}
                             data-y={table.y}
                             data-reserved={table.reserved}
@@ -160,7 +135,7 @@ const tables = [
         </dialog>
     </main>
 
-    <script define:vars={{ email, location_id, tables }}>
+    <script define:vars={{ location_id, tables }}>
         let selected_table_id = null;
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -175,9 +150,10 @@ const tables = [
                     if (taken_seats === 0 && reserved === "false") {
                         ui("#dialog");
                         const id = event.target.getAttribute("data-id");
+                        const name = event.target.getAttribute("data-name");
                         selected_table_id = id;
                         document.getElementById("form-table-id").innerHTML =
-                            `Table ${selected_table_id}`;
+                            `Table ${name}`;
                     }
                 });
             });
@@ -186,35 +162,29 @@ const tables = [
         document
             .getElementById("reservation-form")
             .addEventListener("submit", async (event) => {
-                event.preventDefault(); // Prevent the default form submission
+                event.preventDefault();
 
                 const formData = new FormData();
-                formData.append("email", email);
                 formData.append("location-id", location_id);
                 formData.append("table-id", selected_table_id);
 
                 const plainFormData = Object.fromEntries(formData.entries());
 
                 try {
-                    const response = await fetch("/api/reservation", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
+                    const response = await fetch(
+                        "http://localhost:8080/table/reserved/" +
+                            selected_table_id +
+                            "/true",
+                        {
+                            method: "POST",
                         },
-                        body: JSON.stringify(plainFormData),
-                    });
+                    );
 
-                    if (response.status === 303) {
+                    if (response.status === 200) {
                         window.location.reload();
                     }
-
-                    // handle error ako ne uspije
-                    //
-                    //
                 } catch (error) {
-                    alert(
-                        "An unexpected error occurred. Please try again later.",
-                    );
+                    console.log(error);
                 }
             });
     </script>
